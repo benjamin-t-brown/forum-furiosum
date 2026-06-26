@@ -1,0 +1,60 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page" style="max-width:800px">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1rem">
+    <h1>Manage Categories</h1>
+    <a href="/admin/categories/new" class="btn">+ New Category</a>
+  </div>
+
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <% if (success) { %><div class="success-msg"><%= success %></div><% } %>
+
+  <table class="forum-table" style="width:100%">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th style="text-align:center">Order</th>
+        <th style="text-align:center">Visibility</th>
+        <th style="text-align:center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% categories.forEach(cat => { %>
+      <tr>
+        <td>
+          <strong><%= cat.name %></strong>
+          <code style="font-size:0.75rem;color:var(--color-text-muted);margin-left:0.4rem">/c/<%= cat.slug %></code>
+        </td>
+        <td style="color:var(--color-text-muted);font-size:0.85rem"><%= cat.description || '—' %></td>
+        <td style="text-align:center"><%= cat.sortOrder %></td>
+        <td style="text-align:center">
+          <% if (cat.isHidden) { %>
+            <span class="badge badge-hidden">Staff only</span>
+          <% } else { %>
+            <span style="color:var(--color-text-muted);font-size:0.85rem">Public</span>
+          <% } %>
+        </td>
+        <td style="text-align:center;white-space:nowrap">
+          <a href="/admin/categories/<%= cat.id %>/edit" class="btn btn-secondary" style="font-size:0.8rem;padding:0.2rem 0.6rem">Edit</a>
+          <% if (cat.id !== '00000000-0000-0000-0000-000000000001') { %>
+          <form method="POST" action="/admin/categories/<%= cat.id %>/delete" style="display:inline"
+            onsubmit="return confirm('Delete &quot;<%= cat.name %>&quot;? All threads will be moved to General Discussion.')">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn" style="font-size:0.8rem;padding:0.2rem 0.6rem;background:var(--color-accent);border-color:var(--color-accent)">Delete</button>
+          </form>
+          <% } else { %>
+            <span style="font-size:0.8rem;color:var(--color-text-muted)">(default)</span>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div style="margin-top:1rem">
+    <a href="/admin" class="btn btn-secondary">← Back to Dashboard</a>
+  </div>
+</div>
+
+<%- include('../partials/layout-bottom') %>

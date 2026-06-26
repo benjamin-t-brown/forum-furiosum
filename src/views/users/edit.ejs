@@ -1,0 +1,20 @@
+<%- include('../../partials/layout-top', { title: title }) %>
+
+<div class="form-page">
+  <h1>Edit Profile</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/users/<%= profile.id %>/edit">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-group">
+      <label for="theme">Theme</label>
+      <select name="theme" id="theme">
+        <option value="light"<%= (!profile.theme || profile.theme === 'light') ? ' selected' : '' %>>Light</option>
+        <option value="dark"<%= profile.theme === 'dark' ? ' selected' : '' %>>Dark</option>
+      </select>
+    </div>
+    <button type="submit" class="btn">Save</button>
+    <a href="/users/<%= profile.id %>" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../../partials/layout-bottom') %>

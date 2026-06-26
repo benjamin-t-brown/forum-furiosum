@@ -1,0 +1,22 @@
+<%- include('partials/layout-top', { title: title }) %>
+
+<div class="form-page auth-form">
+  <h1>Login</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/login">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <div class="form-group">
+      <label for="usernameOrEmail">Username or Email</label>
+      <input type="text" id="usernameOrEmail" name="usernameOrEmail" required autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">Login</button>
+    <p>No account? <a href="/register">Register</a></p>
+  </form>
+</div>
+
+<%- include('partials/layout-bottom') %>

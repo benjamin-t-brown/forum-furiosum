@@ -1,0 +1,72 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="thread-view">
+  <div class="thread-header">
+    <h1 class="thread-title"><%= thread.title %></h1>
+    <div class="thread-meta">
+      Posted by <a href="/users/<%= thread.authorUserId %>"><%= thread.authorUsername %></a>
+      in <strong><%= thread.categoryName %></strong>
+      on <%= new Date(thread.createdAt).toLocaleDateString() %>
+      <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+        <%- include('../partials/status-badge', { item: thread }) %>
+      <% } %>
+    </div>
+    <div class="thread-body">
+      <%- thread.bodyHtml %>
+    </div>
+    <% if (canEdit) { %>
+      <div class="thread-actions">
+        <a href="/threads/<%= thread.id %>/edit" class="btn btn-sm">Edit</a>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="posts-section">
+    <h2>Replies (<%= posts.total %>)</h2>
+
+    <% posts.data.forEach(function(post) { %>
+      <div class="post" id="post-<%= post.id %>">
+        <div class="post-author">
+          <%- include('../partials/avatar', { username: post.authorUsername }) %>
+          <a href="/users/<%= post.authorUserId %>"><%= post.authorUsername %></a>
+          <small><%= new Date(post.createdAt).toLocaleDateString() %></small>
+          <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+            <%- include('../partials/status-badge', { item: post }) %>
+          <% } %>
+        </div>
+        <div class="post-body">
+          <%- post.bodyHtml %>
+        </div>
+        <% if (user && (user.id === post.authorUserId || user.role === 'admin' || user.role === 'moderator')) { %>
+          <div class="post-actions">
+            <a href="/posts/<%= post.id %>/edit" class="btn btn-sm">Edit</a>
+          </div>
+        <% } %>
+      </div>
+    <% }); %>
+
+    <% if (posts.totalPages > 1) { %>
+      <div class="pagination">
+        <% if (page > 1) { %><a href="?page=<%= page - 1 %>" class="btn btn-sm">&larr; Prev</a><% } %>
+        <span>Page <%= page %> of <%= posts.totalPages %></span>
+        <% if (page < posts.totalPages) { %><a href="?page=<%= page + 1 %>" class="btn btn-sm">Next &rarr;</a><% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (user) { %>
+    <div class="reply-form">
+      <h3>Post a Reply</h3>
+      <% if (typeof error !== 'undefined' && error) { %><div class="error-msg"><%= error %></div><% } %>
+      <form method="POST" action="/threads/<%= thread.id %>/posts/new">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+        <textarea name="body" rows="6" placeholder="Write your reply..." maxlength="10000" required></textarea>
+        <button type="submit" class="btn">Post Reply</button>
+      </form>
+    </div>
+  <% } else { %>
+    <p class="login-prompt"><a href="/login">Log in</a> to reply.</p>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-bottom') %>

@@ -1,0 +1,49 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page form-page" style="max-width:700px">
+  <h1>Forum Settings</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <% if (success) { %><div class="success-msg"><%= success %></div><% } %>
+
+  <form method="POST" action="/admin/settings">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-group">
+      <label for="forumName">Forum Name</label>
+      <input type="text" id="forumName" name="forumName" value="<%= settings.forumName %>" maxlength="80" required>
+    </div>
+
+    <div class="form-group">
+      <label for="topBarLinks">
+        Top Bar Links (JSON array)
+        <small style="font-weight:normal;color:var(--color-text-muted)"> &mdash; e.g. <code>[{"label":"Blog","url":"https://example.com"}]</code></small>
+      </label>
+      <textarea id="topBarLinks" name="topBarLinks" rows="4"><%= JSON.stringify(settings.topBarLinks, null, 2) %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="themeColorPrimary">Primary Color (hex)</label>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <input type="color" id="themeColorPrimaryPicker" value="<%= settings.themeColorPrimary %>"
+          oninput="document.getElementById('themeColorPrimary').value=this.value">
+        <input type="text" id="themeColorPrimary" name="themeColorPrimary" value="<%= settings.themeColorPrimary %>"
+          pattern="^#[0-9a-fA-F]{6}$" style="width:120px">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="themeColorAccent">Accent Color (hex)</label>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <input type="color" id="themeColorAccentPicker" value="<%= settings.themeColorAccent %>"
+          oninput="document.getElementById('themeColorAccent').value=this.value">
+        <input type="text" id="themeColorAccent" name="themeColorAccent" value="<%= settings.themeColorAccent %>"
+          pattern="^#[0-9a-fA-F]{6}$" style="width:120px">
+      </div>
+    </div>
+
+    <button type="submit" class="btn">Save Settings</button>
+    <a href="/admin" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../partials/layout-bottom') %>

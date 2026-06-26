@@ -1,0 +1,20 @@
+<%- include('../../partials/layout-top', { title: title }) %>
+
+<div class="profile-page">
+  <div class="profile-header">
+    <%- include('../../partials/avatar', { username: profile.username }) %>
+    <div class="profile-info">
+      <h1><%= profile.username %></h1>
+      <p class="profile-role">Role: <span class="badge badge-<%= profile.role %>"><%= profile.role %></span></p>
+      <p class="profile-joined">Joined: <%= new Date(profile.createdAt).toLocaleDateString() %></p>
+      <% if (profile.lastLoginAt) { %><p>Last login: <%= new Date(profile.lastLoginAt).toLocaleDateString() %></p><% } %>
+    </div>
+  </div>
+  <% if (user && (user.id === profile.id || user.role === 'admin')) { %>
+    <div class="profile-actions">
+      <a href="/users/<%= profile.id %>/edit" class="btn btn-sm">Edit Profile</a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../../partials/layout-bottom') %>

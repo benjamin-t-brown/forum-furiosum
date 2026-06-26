@@ -1,0 +1,38 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page form-page" style="max-width:600px">
+  <h1><%= category ? 'Edit Category' : 'New Category' %></h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+
+  <form method="POST" action="/admin/categories/<%= category ? category.id + '/edit' : 'new' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-group">
+      <label for="name">Name <span style="color:var(--color-accent)">*</span></label>
+      <input type="text" id="name" name="name" value="<%= category ? category.name : '' %>"
+        minlength="2" maxlength="80" required>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input type="text" id="description" name="description" value="<%= category ? (category.description || '') : '' %>" maxlength="300">
+    </div>
+
+    <div class="form-group">
+      <label for="sortOrder">Sort Order <small style="font-weight:normal;color:var(--color-text-muted)">(lower = first)</small></label>
+      <input type="number" id="sortOrder" name="sortOrder" value="<%= category ? category.sortOrder : 0 %>" style="width:100px">
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="isHidden" value="1" <%= category && category.isHidden ? 'checked' : '' %>>
+        Staff only <small style="font-weight:normal;color:var(--color-text-muted)">(hidden from regular users)</small>
+      </label>
+    </div>
+
+    <button type="submit" class="btn"><%= category ? 'Save Changes' : 'Create Category' %></button>
+    <a href="/admin/categories" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../partials/layout-bottom') %>

@@ -1,0 +1,9 @@
+<%- include('partials/layout-top', { title: title }) %>
+
+<div class="error-page">
+  <h1><%= statusCode %> &mdash; <%= title %></h1>
+  <p><%= message %></p>
+  <a href="/" class="btn">&larr; Back to Home</a>
+</div>
+
+<%- include('partials/layout-bottom') %>

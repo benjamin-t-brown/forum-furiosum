@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="<%= user && user.theme ? user.theme : 'light' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — <%= forumName %></title>
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/js/theme.js" type="module" defer></script>
+</head>
+<body data-user-id="<%= user ? user.id : '' %>">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="topbar-brand"><%= forumName %></a>
+    <nav class="topbar-nav">
+      <a href="/">Home</a>
+      <% if (settings && settings.topBarLinks) { %>
+        <% settings.topBarLinks.forEach(function(link) { %>
+          <a href="<%= link.url %>" rel="noopener noreferrer"><%= link.label %></a>
+        <% }); %>
+      <% } %>
+    </nav>
+    <div class="topbar-auth">
+      <% if (user) { %>
+        <a href="/users/<%= user.id %>"><%= user.username %></a>
+        <% if (user.role === 'admin' || user.role === 'moderator') { %>
+          <a href="/admin">Admin</a>
+        <% } %>
+        <form method="POST" action="/logout" style="display:inline">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <button type="submit" class="btn-link">Logout</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      <% } %>
+      <button id="theme-toggle" class="btn-link" title="Toggle dark/light mode">&#9681;</button>
+    </div>
+  </div>
+</header>
+<main class="main-content">

@@ -1,0 +1,4 @@
+<% if (item.isDeleted) { %><span class="badge badge-deleted">Deleted</span><% } %>
+<% if (item.isHidden) { %><span class="badge badge-hidden">Hidden</span><% } %>
+<% if (item.approvalStatus === 'new') { %><span class="badge badge-new">Pending</span><% } %>
+<% if (item.approvalStatus === 'unapproved') { %><span class="badge badge-unapproved">Unapproved</span><% } %>

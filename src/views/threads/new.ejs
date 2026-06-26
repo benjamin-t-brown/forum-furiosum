@@ -1,0 +1,30 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="form-page">
+  <h1>New Thread</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/threads/new">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-group">
+      <label for="categoryId">Category</label>
+      <select name="categoryId" id="categoryId" required>
+        <option value="">Select a category...</option>
+        <% categories.forEach(function(cat) { %>
+          <option value="<%= cat.id %>"<%= String(selectedCategoryId) === String(cat.id) ? ' selected' : '' %>><%= cat.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" minlength="3" maxlength="120" required placeholder="Thread title">
+    </div>
+    <div class="form-group">
+      <label for="body">Body</label>
+      <textarea id="body" name="body" rows="10" maxlength="10000" required placeholder="Write your post..."></textarea>
+    </div>
+    <button type="submit" class="btn">Post Thread</button>
+    <a href="/" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../partials/layout-bottom') %>

@@ -1,0 +1,101 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page">
+  <h1>Admin Dashboard</h1>
+
+  <div class="admin-stats">
+    <div class="stat-card">
+      <div class="stat-num"><%= pending.threads %></div>
+      <div class="stat-label">Pending Threads</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= pending.posts %></div>
+      <div class="stat-label">Pending Posts</div>
+    </div>
+  </div>
+
+  <div class="admin-nav">
+    <a href="/admin/settings" class="btn btn-sm">&#9881; Settings</a>
+    <a href="/admin/categories" class="btn btn-sm">&#9783; Categories</a>
+  </div>
+
+  <% if (pendingThreads.length > 0) { %>
+    <h2>Pending Threads</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Category</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pendingThreads.forEach(function(t) { %>
+          <tr>
+            <td><a href="/threads/<%= t.id %>"><%= t.title %></a></td>
+            <td><a href="/users/<%= t.authorUserId %>"><%= t.authorUsername %></a></td>
+            <td><%= t.categoryName %></td>
+            <td><%= new Date(t.createdAt).toLocaleDateString() %></td>
+            <td><a href="/admin/threads/<%= t.id %>/edit" class="btn btn-sm">Review</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <% if (pendingPosts.length > 0) { %>
+    <h2 style="margin-top:1.5rem">Pending Posts</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Thread</th>
+          <th>Author</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pendingPosts.forEach(function(p) { %>
+          <tr>
+            <td><a href="/threads/<%= p.threadId %>"><%= p.threadTitle %></a></td>
+            <td><a href="/users/<%= p.authorUserId %>"><%= p.authorUsername %></a></td>
+            <td><%= new Date(p.createdAt).toLocaleDateString() %></td>
+            <td><a href="/admin/posts/<%= p.id %>/edit" class="btn btn-sm">Review</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <h2 style="margin-top:1.5rem">Recent Moderation Log</h2>
+  <% if (recentLog.length === 0) { %>
+    <p class="empty-state">No moderation actions yet.</p>
+  <% } else { %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>Reason</th>
+          <th>When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentLog.forEach(function(entry) { %>
+          <tr>
+            <td><%= entry.actorUsername %></td>
+            <td><code><%= entry.action %></code></td>
+            <td><%= entry.targetType %>:<%= entry.targetId.substring(0,8) %>&#8230;</td>
+            <td><%= entry.reason || '&#8212;' %></td>
+            <td><%= new Date(entry.createdAt).toLocaleDateString() %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-bottom') %>

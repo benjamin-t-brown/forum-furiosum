@@ -1,0 +1,21 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="form-page">
+  <h1>Edit Thread</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/threads/<%= thread.id %>/edit">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" minlength="3" maxlength="120" required value="<%= thread.title %>">
+    </div>
+    <div class="form-group">
+      <label for="body">Body</label>
+      <textarea id="body" name="body" rows="10" maxlength="10000" required><%= thread.body %></textarea>
+    </div>
+    <button type="submit" class="btn">Save Changes</button>
+    <a href="/threads/<%= thread.id %>" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../partials/layout-bottom') %>

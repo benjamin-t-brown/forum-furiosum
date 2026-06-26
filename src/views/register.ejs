@@ -1,0 +1,27 @@
+<%- include('partials/layout-top', { title: title }) %>
+
+<div class="form-page auth-form">
+  <h1>Register</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+  <form method="POST" action="/register">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <!-- Honeypot: must remain empty -->
+    <input type="text" name="honeypot" style="display:none" tabindex="-1" autocomplete="off">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9]+" required placeholder="alphanumeric, 3-24 chars">
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" minlength="8" required>
+    </div>
+    <button type="submit" class="btn">Register</button>
+    <p>Already have an account? <a href="/login">Login</a></p>
+  </form>
+</div>
+
+<%- include('partials/layout-bottom') %>

@@ -1,0 +1,59 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page form-page" style="max-width:800px">
+  <h1>Review Post</h1>
+  <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+
+  <div class="thread-preview" style="margin-bottom:1.5rem;padding:1rem;border:1px solid var(--color-border)">
+    <p style="font-size:0.8rem;color:var(--color-text-muted)">
+      By <strong><%= post.authorUsername %></strong>
+      in thread <a href="/threads/<%= post.threadId %>"><%= post.threadId.substring(0,8) %>&#8230;</a>
+      &mdash; Status: <strong><%= post.approvalStatus %></strong>
+      <% if (post.isHidden) { %> | <span class="badge badge-hidden">Hidden</span><% } %>
+      <% if (post.isDeleted) { %> | <span class="badge badge-deleted">Deleted</span><% } %>
+    </p>
+    <hr style="margin:0.75rem 0;border-color:var(--color-border)">
+    <div style="white-space:pre-wrap;font-size:0.9rem"><%= post.body %></div>
+  </div>
+
+  <form method="POST" action="/admin/posts/<%= post.id %>/edit">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-group">
+      <label for="body">Body</label>
+      <textarea id="body" name="body" rows="8" maxlength="10000"><%= post.body %></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="approvalStatus">Approval Status</label>
+      <select name="approvalStatus" id="approvalStatus">
+        <option value="">&#8212; no change &#8212;</option>
+        <option value="approved" <%= post.approvalStatus === 'approved' ? 'selected' : '' %>>approved</option>
+        <option value="unapproved" <%= post.approvalStatus === 'unapproved' ? 'selected' : '' %>>unapproved</option>
+        <option value="unknown" <%= post.approvalStatus === 'unknown' ? 'selected' : '' %>>unknown</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="isHidden" value="1" <%= post.isHidden ? 'checked' : '' %>> Hidden
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="isDeleted" value="1" <%= post.isDeleted ? 'checked' : '' %>> Deleted
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="reason">Reason (optional, max 280 chars)</label>
+      <input type="text" id="reason" name="reason" maxlength="280" placeholder="Moderation reason...">
+    </div>
+
+    <button type="submit" class="btn">Save Changes</button>
+    <a href="/admin" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<%- include('../partials/layout-bottom') %>
