@@ -100,6 +100,15 @@ a:hover { text-decoration: underline; }
   font-size: 0.85rem;
 }
 
+.topbar-auth a.topbar-admin-btn {
+  color: #fff;
+  line-height: 1.2;
+}
+
+.topbar-auth a.topbar-admin-btn:hover {
+  color: #fff;
+}
+
 /* ===== MAIN CONTENT ===== */
 .main-content {
   max-width: 1400px;
@@ -307,7 +316,7 @@ a:hover { text-decoration: underline; }
   margin-bottom: 0.25rem;
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]):not([type="radio"]),
 .form-group select,
 .form-group textarea {
   width: 100%;
@@ -317,6 +326,22 @@ a:hover { text-decoration: underline; }
   color: var(--color-text);
   font-family: inherit;
   font-size: 13px;
+}
+
+.form-group label:has(> input[type="checkbox"]),
+.form-group label:has(> input[type="radio"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+  width: auto;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .form-group textarea { resize: vertical; }

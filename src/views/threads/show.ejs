@@ -6,7 +6,7 @@
     <div class="thread-meta">
       Posted by <a href="/users/<%= thread.authorUserId %>"><%= thread.authorUsername %></a>
       in <strong><%= thread.categoryName %></strong>
-      on <%= new Date(thread.createdAt).toLocaleDateString() %>
+      on <%= formatDate(thread.createdAt) %>
       <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
         <%- include('../partials/status-badge', { item: thread }) %>
       <% } %>
@@ -29,7 +29,7 @@
         <div class="post-author">
           <%- include('../partials/avatar', { username: post.authorUsername }) %>
           <a href="/users/<%= post.authorUserId %>"><%= post.authorUsername %></a>
-          <small><%= new Date(post.createdAt).toLocaleDateString() %></small>
+          <small><%= formatDate(post.createdAt) %></small>
           <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
             <%- include('../partials/status-badge', { item: post }) %>
           <% } %>

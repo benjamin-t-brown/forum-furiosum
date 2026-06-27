@@ -166,7 +166,6 @@ Allowed for thread/post `approvalStatus`:
 
 - SQLite database file
 - Migration tool required (any TS-friendly migration workflow)
-- Enable WAL mode for better concurrent read/write behavior
 
 ## Routing Structure
 

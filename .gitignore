@@ -1,6 +1,12 @@
 node_modules
 dist
+
+# SQLite database files
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
 .env
 .env.*
 !.env.example

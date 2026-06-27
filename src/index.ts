@@ -12,6 +12,7 @@ import { sessionMiddleware } from './middleware/session';
 import { csrfMiddleware } from './middleware/csrf';
 import { requestId } from './middleware/requestId';
 import { getForumSettings } from './services/settings';
+import { formatDisplayDate } from './utils/formatDate';
 import logger from './logger';
 
 const PORT = parseInt(process.env.PORT ?? '9827', 10);
@@ -29,6 +30,7 @@ async function main() {
   // View engine
   app.set('view engine', 'ejs');
   app.set('views', path.join(process.cwd(), 'src/views'));
+  app.locals.formatDate = formatDisplayDate;
 
   // Static files
   app.use(express.static(path.join(process.cwd(), 'public')));

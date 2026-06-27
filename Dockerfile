@@ -1,9 +1,11 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+RUN corepack enable
+
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 
 COPY tsconfig.json ./
@@ -14,11 +16,13 @@ RUN npm run prod 2>/dev/null || npx tsc
 # Stage 2: Production
 FROM node:20-alpine AS runner
 
+RUN corepack enable
+
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY package*.json ./
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist

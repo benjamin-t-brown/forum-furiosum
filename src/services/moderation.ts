@@ -24,7 +24,11 @@ export function writeAuditLog(
 export function getAuditLog(
   db: Database.Database,
   options: { page?: number; limit?: number; targetType?: TargetType; targetId?: string } = {}
-): PaginatedResult<ModerationAuditLog & { actorUsername: string }> {
+): PaginatedResult<ModerationAuditLog & {
+  actorUsername: string;
+  targetLabel: string | null;
+  targetUrl: string | null;
+}> {
   const page = Math.max(1, options.page ?? 1);
   const limit = Math.min(100, Math.max(1, options.limit ?? 20));
   const offset = (page - 1) * limit;
@@ -42,13 +46,35 @@ export function getAuditLog(
   ).get(...params) as { total: number };
 
   const data = db.prepare(`
-    SELECT m.*, u.username as actorUsername
+    SELECT
+      m.*,
+      u.username as actorUsername,
+      CASE m.targetType
+        WHEN 'thread' THEN (SELECT title FROM threads WHERE id = m.targetId)
+        WHEN 'post' THEN (
+          SELECT t.title FROM posts p
+          JOIN threads t ON p.threadId = t.id
+          WHERE p.id = m.targetId
+        )
+        WHEN 'user' THEN (SELECT username FROM users WHERE id = m.targetId)
+      END as targetLabel,
+      CASE m.targetType
+        WHEN 'thread' THEN '/threads/' || m.targetId
+        WHEN 'post' THEN (
+          SELECT '/threads/' || p.threadId FROM posts p WHERE p.id = m.targetId
+        )
+        WHEN 'user' THEN '/users/' || m.targetId
+      END as targetUrl
     FROM moderation_audit_log m
     JOIN users u ON m.actorUserId = u.id
     ${where}
     ORDER BY m.createdAt DESC
     LIMIT ? OFFSET ?
-  `).all(...params, limit, offset) as (ModerationAuditLog & { actorUsername: string })[];
+  `).all(...params, limit, offset) as (ModerationAuditLog & {
+    actorUsername: string;
+    targetLabel: string | null;
+    targetUrl: string | null;
+  })[];
 
   return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }

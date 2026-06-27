@@ -8,7 +8,7 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 - **Language**: TypeScript (compiled with `tsc`, or run directly with `tsx` in dev)
 - **Web framework**: Express
 - **Templating**: EJS
-- **Database**: SQLite via `better-sqlite3` (WAL mode)
+- **Database**: SQLite via `better-sqlite3`
 - **Auth**: Argon2id password hashing, server-side sessions
 - **Port**: 9827
 
@@ -19,14 +19,18 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 ### Prerequisites
 
 - Node.js 20+
-- npm
+- npm 11.17+ (pinned via Corepack — see [Adding and updating dependencies](ADD__UPDATE_DEPS.md))
 
 ### Setup
 
 ```bash
 # Clone and install dependencies
 npm install
+```
 
+For dependency policy, version pinning, and install-script allowlists, see [ADD__UPDATE_DEPS.md](ADD__UPDATE_DEPS.md).
+
+```bash
 # Copy env file and edit it
 cp .env.example .env
 # Edit .env — at minimum set SESSION_SECRET and DB_PATH

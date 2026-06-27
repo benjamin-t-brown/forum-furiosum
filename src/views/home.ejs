@@ -36,7 +36,7 @@
                   </td>
                   <td class="td-author"><a href="/users/<%= thread.authorUserId %>"><%= thread.authorUsername %></a></td>
                   <td class="td-replies"><%= thread.postCount %></td>
-                  <td class="td-activity"><%= new Date(thread.updatedAt).toLocaleDateString() %></td>
+                  <td class="td-activity"><%= formatDate(thread.updatedAt) %></td>
                 </tr>
               <% }); %>
             <% } %>

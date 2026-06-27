@@ -23,7 +23,7 @@
       <% if (user) { %>
         <a href="/users/<%= user.id %>"><%= user.username %></a>
         <% if (user.role === 'admin' || user.role === 'moderator') { %>
-          <a href="/admin">Admin</a>
+          <a href="/admin" class="btn btn-sm topbar-admin-btn">Admin</a>
         <% } %>
         <form method="POST" action="/logout" style="display:inline">
           <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">

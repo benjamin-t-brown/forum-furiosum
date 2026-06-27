@@ -43,6 +43,15 @@ describe('Moderation service', () => {
       const result = getAuditLog(db);
       expect(result.data.length).toBeGreaterThan(0);
       expect(result.data[0].actorUsername).toBe('modadmin');
+      expect(result.data[0].targetLabel).toBe('Mod Thread');
+      expect(result.data[0].targetUrl).toBe(`/threads/${threadId}`);
+    });
+
+    it('links post targets to their thread', () => {
+      writeAuditLog(db, { actorUserId: adminId, targetType: 'post', targetId: postId, action: 'approve' });
+      const entry = getAuditLog(db).data[0];
+      expect(entry.targetLabel).toBe('Mod Thread');
+      expect(entry.targetUrl).toBe(`/threads/${threadId}`);
     });
   });
 

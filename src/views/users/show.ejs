@@ -1,13 +1,13 @@
-<%- include('../../partials/layout-top', { title: title }) %>
+<%- include('../partials/layout-top', { title: title }) %>
 
 <div class="profile-page">
   <div class="profile-header">
-    <%- include('../../partials/avatar', { username: profile.username }) %>
+    <%- include('../partials/avatar', { username: profile.username }) %>
     <div class="profile-info">
       <h1><%= profile.username %></h1>
       <p class="profile-role">Role: <span class="badge badge-<%= profile.role %>"><%= profile.role %></span></p>
-      <p class="profile-joined">Joined: <%= new Date(profile.createdAt).toLocaleDateString() %></p>
-      <% if (profile.lastLoginAt) { %><p>Last login: <%= new Date(profile.lastLoginAt).toLocaleDateString() %></p><% } %>
+      <p class="profile-joined">Joined: <%= formatDate(profile.createdAt) %></p>
+      <% if (profile.lastLoginAt) { %><p>Last login: <%= formatDate(profile.lastLoginAt) %></p><% } %>
     </div>
   </div>
   <% if (user && (user.id === profile.id || user.role === 'admin')) { %>
@@ -17,4 +17,4 @@
   <% } %>
 </div>
 
-<%- include('../../partials/layout-bottom') %>
+<%- include('../partials/layout-bottom') %>
