@@ -1,0 +1,44 @@
+<%- include('layout-top', { title: title }) %>
+
+<div class="embed-auth-return" data-thread-id="<%= threadId %>" data-draft-key="<%= draftKey %>">
+  <p>Completing sign in…</p>
+</div>
+<script>
+(function () {
+  var root = document.querySelector('.embed-auth-return');
+  var threadId = root.dataset.threadId;
+  var draftKey = root.dataset.draftKey;
+  var draft = localStorage.getItem(draftKey) || '';
+  var opener = window.opener;
+  var csrf = '<%= csrfToken %>';
+
+  function notify(type) {
+    if (opener) {
+      opener.postMessage({ type: type, threadId: threadId }, '*');
+    }
+  }
+
+  if (draft.trim()) {
+    var body = '_csrf=' + encodeURIComponent(csrf) + '&body=' + encodeURIComponent(draft);
+    fetch('/embed/threads/' + encodeURIComponent(threadId) + '/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body,
+      credentials: 'same-origin',
+      redirect: 'follow',
+    }).then(function () {
+      localStorage.removeItem(draftKey);
+      notify('embed:posted');
+      window.close();
+    }).catch(function () {
+      notify('embed:auth-complete');
+      window.close();
+    });
+  } else {
+    notify('embed:auth-complete');
+    window.close();
+  }
+})();
+</script>
+
+<%- include('layout-bottom') %>

@@ -5,6 +5,7 @@
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
   <form method="POST" action="/register">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
     <!-- Honeypot: must remain empty -->
     <input type="text" name="honeypot" style="display:none" tabindex="-1" autocomplete="off">
     <div class="form-group">
@@ -20,7 +21,7 @@
       <input type="password" id="password" name="password" minlength="8" required>
     </div>
     <button type="submit" class="btn">Register</button>
-    <p>Already have an account? <a href="/login">Login</a></p>
+    <p>Already have an account? <a href="/login<% if (next && next !== '/') { %>?next=<%= encodeURIComponent(next) %><% } %>">Login</a></p>
   </form>
 </div>
 

@@ -63,6 +63,22 @@
     </div>
 
     <div class="form-group">
+      <label>
+        <input type="checkbox" name="embedEnabled" value="1" <%= thread.embedEnabled ? 'checked' : '' %>> Allow embedding (comment thread for external pages)
+      </label>
+    </div>
+
+    <% if (thread.embedEnabled) { %>
+    <div class="form-group">
+      <label>Embed snippet</label>
+      <textarea readonly rows="3" style="width:100%;font-family:monospace;font-size:0.8rem" onclick="this.select()">&lt;iframe src=&quot;<%= embedUrl %>&quot; width=&quot;100%&quot; height=&quot;480&quot; style=&quot;border:0&quot; title=&quot;Comments&quot;&gt;&lt;/iframe&gt;</textarea>
+      <p style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem">
+        <a href="/embed/threads/<%= thread.id %>" target="_blank" rel="noopener">Preview embed</a>
+      </p>
+    </div>
+    <% } %>
+
+    <div class="form-group">
       <label for="reason">Reason (optional, max 280 chars)</label>
       <input type="text" id="reason" name="reason" maxlength="280" placeholder="Moderation reason...">
     </div>

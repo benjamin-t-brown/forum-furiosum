@@ -11,13 +11,16 @@ export const authWebRouter = Router();
 // GET /register
 authWebRouter.get('/register', (req, res) => {
   if (req.user) {return res.redirect('/');}
-  res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: null });
+  const next = (req.query.next as string) || '/';
+  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/';
+  res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: null, next: safeNext });
 });
 
 // POST /register
 authWebRouter.post('/register', signupRateLimiter, async (req, res) => {
   if (req.user) {return res.redirect('/');}
-  const { username, email, password, honeypot } = req.body;
+  const { username, email, password, honeypot, next } = req.body;
+  const redirectTo = (next && next.startsWith('/') && !next.startsWith('//')) ? next : '/';
 
   if (honeypot) {return res.redirect('/');}
 
@@ -27,21 +30,21 @@ authWebRouter.post('/register', signupRateLimiter, async (req, res) => {
   if (!password || password.length < 8) {errors.push('Password must be at least 8 characters');}
 
   if (errors.length) {
-    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: errors.join(', ') });
+    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: errors.join(', '), next: redirectTo });
   }
 
   const db = getDb();
   if (getUserByEmail(db, email)) {
-    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: 'Email already registered' });
+    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: 'Email already registered', next: redirectTo });
   }
   if (getUserByUsername(db, username)) {
-    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: 'Username already taken' });
+    return res.render('register', { title: 'Register', csrfToken: res.locals.csrfToken, error: 'Username already taken', next: redirectTo });
   }
 
   const user = await createUser(db, username, email, password);
   const session = createSession(db, user.id, req.ip, req.headers['user-agent']);
   setSessionCookie(res, session.sessionId);
-  res.redirect('/');
+  res.redirect(redirectTo);
 });
 
 // GET /login

@@ -1,0 +1,52 @@
+<%- include('layout-top', { title: title }) %>
+
+<div class="embed-thread" data-thread-id="<%= threadId %>" data-draft-key="<%= draftKey %>" data-auth-return-url="<%= authReturnUrl %>">
+  <% if (notice) { %><div class="embed-notice"><%= notice %></div><% } %>
+  <% if (error) { %><div class="embed-error-msg"><%= error %></div><% } %>
+
+  <div class="embed-comments">
+    <h2 class="embed-heading">Comments (<%= posts.total %>)</h2>
+
+    <% if (posts.data.length === 0) { %>
+      <p class="embed-empty">No comments yet. Be the first to comment.</p>
+    <% } else { %>
+      <% posts.data.forEach(function(post) { %>
+        <article class="embed-comment" id="post-<%= post.id %>">
+          <header class="embed-comment-header">
+            <strong><%= post.authorUsername %></strong>
+            <time datetime="<%= post.createdAt %>"><%= formatDate(post.createdAt) %></time>
+          </header>
+          <div class="embed-comment-body"><%- post.bodyHtml %></div>
+        </article>
+      <% }); %>
+    <% } %>
+
+    <% if (posts.totalPages > 1) { %>
+      <nav class="embed-pagination">
+        <% if (page > 1) { %><a href="?page=<%= page - 1 %>">&larr; Prev</a><% } %>
+        <span>Page <%= page %> of <%= posts.totalPages %></span>
+        <% if (page < posts.totalPages) { %><a href="?page=<%= page + 1 %>">Next &rarr;</a><% } %>
+      </nav>
+    <% } %>
+  </div>
+
+  <div class="embed-compose">
+    <h3 class="embed-heading">Add a comment</h3>
+    <form id="embed-compose-form" method="POST" action="/embed/threads/<%= threadId %>/posts">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <textarea id="embed-compose-body" name="body" rows="4" placeholder="Write your comment…" maxlength="10000"><%= body %></textarea>
+      <div class="embed-compose-actions">
+        <% if (user) { %>
+          <button type="submit" class="embed-btn embed-btn-primary">Post comment</button>
+          <span class="embed-signed-in">Signed in as <%= user.username %></span>
+        <% } else { %>
+          <button type="submit" class="embed-btn embed-btn-primary">Post comment</button>
+          <button type="button" class="embed-btn embed-btn-secondary" id="embed-login-btn">Log in to post</button>
+          <button type="button" class="embed-btn embed-btn-secondary" id="embed-register-btn">Create account</button>
+        <% } %>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('layout-bottom') %>

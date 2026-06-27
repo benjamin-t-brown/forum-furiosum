@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
-import type { Post, PaginatedResult, UserRole } from '../models';
+import type { Post, PaginatedResult, UserRole, ApprovalStatus, UserTrust } from '../models';
 
 function visibilityWhere(role: UserRole | undefined): string {
   if (role === 'admin' || role === 'moderator') {return '';}
@@ -47,15 +47,20 @@ export function getPostById(
   `).get(id) as (Post & { authorUsername: string }) | undefined) ?? null;
 }
 
+export function resolveEmbedPostApproval(trust: UserTrust): ApprovalStatus {
+  return trust === 'trusted' || trust === 'verified' ? 'approved' : 'new';
+}
+
 export function createPost(
   db: Database.Database,
-  data: { threadId: string; authorUserId: string; body: string }
+  data: { threadId: string; authorUserId: string; body: string; approvalStatus?: ApprovalStatus }
 ): Post {
   const id = uuidv4();
+  const approvalStatus = data.approvalStatus ?? 'new';
   db.prepare(`
-    INSERT INTO posts (id, threadId, authorUserId, body)
-    VALUES (?, ?, ?, ?)
-  `).run(id, data.threadId, data.authorUserId, data.body);
+    INSERT INTO posts (id, threadId, authorUserId, body, approvalStatus)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(id, data.threadId, data.authorUserId, data.body, approvalStatus);
 
   // Update thread's updatedAt
   db.prepare('UPDATE threads SET updatedAt = datetime(\'now\') WHERE id = ?').run(data.threadId);

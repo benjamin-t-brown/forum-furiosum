@@ -37,6 +37,7 @@ export interface Thread {
   lastEditedAt: string | null;
   lastEditedByUserId: string | null;
   lastEditedReason: string | null;
+  embedEnabled: 0 | 1;
 }
 
 export interface Post {

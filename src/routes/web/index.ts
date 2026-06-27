@@ -8,6 +8,7 @@ import { threadsWebRouter } from './threads';
 import { postsWebRouter } from './posts';
 import { usersWebRouter } from './users';
 import { adminWebRouter } from './admin';
+import { embedRouter } from './embed';
 
 export const webRouter = Router();
 
@@ -27,6 +28,7 @@ webRouter.use((req: Request, res: Response, next: NextFunction) => {
 
 webRouter.use('/', homeRouter);
 webRouter.use('/', authWebRouter);
+webRouter.use('/embed', embedRouter);
 webRouter.use('/threads', threadsWebRouter);
 webRouter.use('/posts', postsWebRouter);
 webRouter.use('/users', usersWebRouter);

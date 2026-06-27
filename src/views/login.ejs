@@ -15,7 +15,7 @@
       <input type="password" id="password" name="password" required autocomplete="current-password">
     </div>
     <button type="submit" class="btn">Login</button>
-    <p>No account? <a href="/register">Register</a></p>
+    <p>No account? <a href="/register<% if (next && next !== '/') { %>?next=<%= encodeURIComponent(next) %><% } %>">Register</a></p>
   </form>
 </div>
 

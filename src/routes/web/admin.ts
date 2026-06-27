@@ -45,10 +45,12 @@ adminWebRouter.get('/threads/:id/edit', (req, res) => {
   if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
 
   const categories = listCategories(db, true);
+  const embedUrl = `${req.protocol}://${req.get('host')}/embed/threads/${thread.id}`;
   res.render('admin/thread-edit', {
     title: 'Edit Thread (Admin)',
     thread,
     categories,
+    embedUrl,
     error: null,
   });
 });
@@ -59,16 +61,18 @@ adminWebRouter.post('/threads/:id/edit', (req, res) => {
   const thread = getThreadById(db, (req.params.id as string), 'admin');
   if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
 
-  const { title, body, categoryId, approvalStatus, isHidden, isDeleted, reason } = req.body;
+  const { title, body, categoryId, approvalStatus, isHidden, isDeleted, embedEnabled, reason } = req.body;
 
   // Validate status transition if changing
   if (approvalStatus && approvalStatus !== thread.approvalStatus) {
     if (!isValidStatusTransition(thread.approvalStatus, approvalStatus)) {
       const categories = listCategories(db, true);
+      const embedUrl = `${req.protocol}://${req.get('host')}/embed/threads/${thread.id}`;
       return res.render('admin/thread-edit', {
         title: 'Edit Thread (Admin)',
         thread,
         categories,
+        embedUrl,
         error: `Invalid status transition: ${thread.approvalStatus} → ${approvalStatus}`,
       });
     }
@@ -79,10 +83,12 @@ adminWebRouter.post('/threads/:id/edit', (req, res) => {
     const targetCat = getCategoryById(db, categoryId);
     if (!targetCat) {
       const categories = listCategories(db, true);
+      const embedUrl = `${req.protocol}://${req.get('host')}/embed/threads/${thread.id}`;
       return res.render('admin/thread-edit', {
         title: 'Edit Thread (Admin)',
         thread,
         categories,
+        embedUrl,
         error: 'Target category not found',
       });
     }
@@ -95,6 +101,7 @@ adminWebRouter.post('/threads/:id/edit', (req, res) => {
     approvalStatus: approvalStatus || undefined,
     isHidden: isHidden !== undefined ? (isHidden === '1' ? 1 : 0) : undefined,
     isDeleted: isDeleted !== undefined ? (isDeleted === '1' ? 1 : 0) : undefined,
+    embedEnabled: embedEnabled === '1' ? 1 : 0,
     lastEditedByUserId: req.user!.id,
     lastEditedReason: reason || undefined,
   });

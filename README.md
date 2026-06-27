@@ -113,6 +113,42 @@ The database is stored at `DB_PATH` inside the container — mount a host direct
 | `ADMIN_BOOTSTRAP_EMAIL` | Prod only | `admin@admin.com` (dev) | Admin account email for first run |
 | `ADMIN_BOOTSTRAP_PASSWORD` | Prod only | `test12345` (dev) | Admin account password for first run |
 | `ADMIN_BOOTSTRAP_USERNAME` | No | `admin` | Admin account username for first run |
+| `EMBED_FRAME_ANCESTORS` | No | `*` | CSP `frame-ancestors` for embed routes; restrict to your blog origin(s) in production |
+
+---
+
+## Embeddable comment threads
+
+A thread can be embedded at the bottom of external pages (blog posts, announcements) as a comment thread iframe.
+
+### Enable embedding
+
+1. Open **Admin → Review Thread** for the thread you want to embed.
+2. Check **Allow embedding**.
+3. Save changes, then copy the iframe snippet shown on that page.
+
+Example:
+
+```html
+<iframe src="https://your-forum.example.com/embed/threads/THREAD_ID" width="100%" height="480" style="border:0" title="Comments"></iframe>
+```
+
+Preview the embed at `/embed/threads/THREAD_ID`.
+
+### Behavior
+
+- **Public read access** — anyone can view approved comments; the thread opening post is hidden in the embed.
+- **Login required to post** — users can compose a comment first; login/register opens in a popup so the draft is preserved in `localStorage`.
+- **Cross-site auth** — login runs in a first-party popup on the forum domain (required for modern browser cookie rules).
+- **Moderation** — comments from **trusted** or **verified** users are approved immediately; other users go to the moderation queue (same as the main forum).
+
+### Configuration
+
+Set `EMBED_FRAME_ANCESTORS` in `.env` to control which parent sites may embed the iframe. Use `*` for local development; in production prefer explicit origins, e.g.:
+
+```
+EMBED_FRAME_ANCESTORS=https://blog.example.com https://www.example.com
+```
 
 ---
 
@@ -147,6 +183,7 @@ Key endpoints:
 |---|---|
 | `/` | Home — category list with recent threads |
 | `/threads/:id` | Thread view with posts |
+| `/embed/threads/:id` | Embeddable comment thread (iframe) |
 | `/threads/new` | Create thread |
 | `/threads/:id/edit` | Edit thread |
 | `/register` | Register |

@@ -63,6 +63,20 @@ export function getThreadById(
   return (db.prepare(sql).get(id) as (Thread & { authorUsername: string; categoryName: string }) | undefined) ?? null;
 }
 
+export function getEmbedThreadById(
+  db: Database.Database,
+  id: string
+): (Thread & { authorUsername: string; categoryName: string }) | null {
+  const sql = `
+    SELECT t.*, u.username as authorUsername, c.name as categoryName
+    FROM threads t
+    JOIN users u ON t.authorUserId = u.id
+    JOIN categories c ON t.categoryId = c.id
+    WHERE t.id = ? AND t.embedEnabled = 1 AND t.isDeleted = 0
+  `;
+  return (db.prepare(sql).get(id) as (Thread & { authorUsername: string; categoryName: string }) | undefined) ?? null;
+}
+
 export function createThread(
   db: Database.Database,
   data: { categoryId: string; authorUserId: string; title: string; body: string }
@@ -78,7 +92,7 @@ export function createThread(
 export function updateThread(
   db: Database.Database,
   id: string,
-  data: Partial<Pick<Thread, 'title' | 'body' | 'isHidden' | 'isDeleted' | 'approvalStatus' | 'categoryId'>> & {
+  data: Partial<Pick<Thread, 'title' | 'body' | 'isHidden' | 'isDeleted' | 'approvalStatus' | 'categoryId' | 'embedEnabled'>> & {
     lastEditedByUserId?: string;
     lastEditedReason?: string;
   }
@@ -92,6 +106,7 @@ export function updateThread(
   if (data.isHidden !== undefined) { fields.push('isHidden = ?'); values.push(data.isHidden); }
   if (data.isDeleted !== undefined) { fields.push('isDeleted = ?'); values.push(data.isDeleted); }
   if (data.approvalStatus !== undefined) { fields.push('approvalStatus = ?'); values.push(data.approvalStatus); }
+  if (data.embedEnabled !== undefined) { fields.push('embedEnabled = ?'); values.push(data.embedEnabled); }
   if (data.lastEditedByUserId !== undefined) {
     fields.push('lastEditedByUserId = ?', 'lastEditedAt = datetime(\'now\')');
     values.push(data.lastEditedByUserId);
