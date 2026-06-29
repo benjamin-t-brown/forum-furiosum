@@ -19,7 +19,7 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 ### Prerequisites
 
 - Node.js 20+
-- npm 11.17+ (pinned via Corepack — see [Adding and updating dependencies](ADD_UPDATE_DEPS.md))
+- npm 11.17+ (pinned via Corepack — see [Adding and updating dependencies](docs/ADD_UPDATE_DEPS.md))
 
 ### Setup
 
@@ -28,7 +28,7 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 npm install
 ```
 
-For dependency policy, version pinning, and install-script allowlists, see [ADD_UPDATE_DEPS.md](ADD_UPDATE_DEPS.md).
+For dependency policy, version pinning, and install-script allowlists, see [ADD_UPDATE_DEPS.md](docs/ADD_UPDATE_DEPS.md).
 
 ```bash
 # Copy env file and edit it
@@ -77,9 +77,9 @@ This compiles TypeScript with `tsc` then runs `node dist/index.js`.
 
 ## Deployment
 
-Docker build, push to AWS ECR, server setup, env vars, and nginx subpath config: **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+Docker build, push to AWS ECR, server setup, env vars, and nginx subpath config: **[DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
-Discord notify cron (uses the same container): **[NOTIFICATIONS.md](NOTIFICATIONS.md)**.
+Discord notify cron (uses the same container): **[NOTIFICATIONS.md](docs/NOTIFICATIONS.md)**.
 
 ---
 
@@ -128,5 +128,5 @@ Key endpoints:
 - `GET /api/v1/threads` — list threads (paginated)
 - `POST /api/v1/auth/login` — login
 - `POST /api/v1/auth/register` — register
-- `GET /api/v1/internal/pending` — pending moderation queue (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](NOTIFICATIONS.md))
-- `GET /api/v1/internal/events` — forum activity events in a date range (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](NOTIFICATIONS.md))
+- `GET /api/v1/internal/pending` — pending moderation queue (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](docs/NOTIFICATIONS.md))
+- `GET /api/v1/internal/events` — forum activity events in a date range (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](docs/NOTIFICATIONS.md))

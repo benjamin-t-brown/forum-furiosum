@@ -6,12 +6,12 @@ RUN corepack enable
 WORKDIR /app
 
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci
+RUN corepack npm ci
 
 COPY tsconfig.json ./
 COPY src/ ./src/
 
-RUN npm run prod 2>/dev/null || npx tsc
+RUN corepack npm exec tsc
 
 # Stage 2: Production
 FROM node:24-alpine AS runner
@@ -23,7 +23,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --omit=dev
+RUN corepack npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 COPY src/views ./src/views

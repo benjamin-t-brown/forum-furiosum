@@ -9,8 +9,7 @@ Image: `442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:
 ## Build
 
 ```bash
-docker build -t revirtualis/forum-furiosum
-docker tag revirtualis/forum-furiosum:latest 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest
+docker build -t 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest .
 ```
 
 ---
