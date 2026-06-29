@@ -3,7 +3,7 @@ import { getDb } from '../../db/db';
 import { getUserById, getUserByIdForAdmin, deleteAccount } from '../../services/users';
 import { verifyPassword } from '../../services/auth';
 import { deleteSession } from '../../services/session';
-import { requireAuth } from '../../middleware/requireAuth';
+import { requireRegisteredUser } from '../../middleware/requireAuth';
 import {
   createUsernameChangeRequest,
   getPendingUsernameChangeForUser,
@@ -29,7 +29,7 @@ usersWebRouter.get('/:id', (req, res) => {
 });
 
 // GET /users/:id/edit
-usersWebRouter.get('/:id/edit', requireAuth, (req, res) => {
+usersWebRouter.get('/:id/edit', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const profile = getUserById(db, (req.params.id as string));
   if (!profile) {return res.status(404).render('error', { title: 'Not Found', message: 'User not found', statusCode: 404 });}
@@ -53,7 +53,7 @@ usersWebRouter.get('/:id/edit', requireAuth, (req, res) => {
 });
 
 // POST /users/:id/username-request
-usersWebRouter.post('/:id/username-request', requireAuth, (req, res) => {
+usersWebRouter.post('/:id/username-request', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const userId = req.params.id as string;
   const profile = getUserById(db, userId);
@@ -78,7 +78,7 @@ usersWebRouter.post('/:id/username-request', requireAuth, (req, res) => {
 });
 
 // POST /users/:id/delete
-usersWebRouter.post('/:id/delete', requireAuth, async (req, res) => {
+usersWebRouter.post('/:id/delete', requireRegisteredUser, async (req, res) => {
   const db = getDb();
   const userId = req.params.id as string;
   const profile = db.prepare('SELECT * FROM users WHERE id = ? AND isDeleted = 0').get(userId) as

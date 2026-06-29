@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import type { Session } from '../models';
 
-const SESSION_MAX_AGE_DAYS = 14;
+const SESSION_MAX_AGE_DAYS = 365;
 
 function hashValue(value: string): string {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -35,10 +35,14 @@ export function getSession(db: Database.Database, sessionId: string): Session | 
 
   if (!session) {return null;}
 
-  // Update lastSeenAt
-  db.prepare("UPDATE sessions SET lastSeenAt = datetime('now') WHERE sessionId = ?").run(sessionId);
+  db.prepare(`
+    UPDATE sessions
+    SET lastSeenAt = datetime('now'),
+        expiresAt = datetime('now', '+' || ? || ' days')
+    WHERE sessionId = ?
+  `).run(SESSION_MAX_AGE_DAYS, sessionId);
 
-  return session;
+  return db.prepare('SELECT * FROM sessions WHERE sessionId = ?').get(sessionId) as Session;
 }
 
 export function deleteSession(db: Database.Database, sessionId: string): void {

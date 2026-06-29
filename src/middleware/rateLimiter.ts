@@ -16,6 +16,14 @@ export const signupRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+export const ephemeralIdentifyRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: { ok: false, error: { code: 'RATE_LIMITED', message: 'Too many ephemeral identify attempts, please try again later' } },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const apiRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100,

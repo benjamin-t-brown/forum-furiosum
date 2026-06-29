@@ -2,12 +2,13 @@ import { Router } from 'express';
 import { getDb } from '../../db/db';
 import { listThreads, getThreadById, createThread, updateThread, deleteThread } from '../../services/threads';
 import { listPosts, createPost, resolveReplyApproval, resolveContentApproval } from '../../services/posts';
-import { requireAuth } from '../../middleware/requireAuth';
+import { requireAuth, requireRegisteredUser } from '../../middleware/requireAuth';
 import { requireRole } from '../../middleware/requireRole';
 import { writeAuditLog, approveThread, hideThread, lockThread } from '../../services/moderation';
 import { ok, fail, parsePagination } from './helpers';
 import { getPostBodyValidationError } from '../../utils/postBodyLimits';
 import { canPostToThread } from '../../utils/threadLock';
+import { canEphemeralUserPostToThread, isEphemeralUser, touchEphemeralActivity } from '../../services/ephemeralUsers';
 
 export const threadsRouter = Router();
 
@@ -47,7 +48,7 @@ threadsRouter.get('/:id/posts', (req, res) => {
 });
 
 // POST /api/v1/threads
-threadsRouter.post('/', requireAuth, (req, res) => {
+threadsRouter.post('/', requireRegisteredUser, (req, res) => {
   const { categoryId, title, body } = req.body;
   if (!categoryId || !title || !body) {return void fail(res, 400, 'VALIDATION_ERROR', 'categoryId, title, and body are required');}
   if (title.length < 3 || title.length > 120) {return void fail(res, 400, 'VALIDATION_ERROR', 'title must be 3-120 characters');}
@@ -64,6 +65,10 @@ threadsRouter.post('/:id/posts', requireAuth, (req, res) => {
   const thread = getThreadById(db, (req.params.id as string), req.user?.role);
   if (!thread) {return void fail(res, 404, 'NOT_FOUND', 'Thread not found');}
 
+  if (!canEphemeralUserPostToThread(thread.replyApprovalTrust, req.user)) {
+    return void fail(res, 403, 'FORBIDDEN', 'You cannot post replies on this thread');
+  }
+
   if (!canPostToThread(!!thread.isLocked, req.user)) {
     return void fail(res, 403, 'FORBIDDEN', 'This thread is locked');
   }
@@ -76,8 +81,13 @@ threadsRouter.post('/:id/posts', requireAuth, (req, res) => {
     threadId: (req.params.id as string),
     authorUserId: req.user!.id,
     body,
-    approvalStatus: resolveReplyApproval(req.user!.trust, thread.replyApprovalTrust),
+    approvalStatus: resolveReplyApproval(req.user!.trust, thread.replyApprovalTrust, {
+      isEphemeral: isEphemeralUser(req.user),
+    }),
   });
+  if (isEphemeralUser(req.user)) {
+    touchEphemeralActivity(db, req.user!.id);
+  }
   ok(res, post, 201);
 });
 

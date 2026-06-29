@@ -13,6 +13,8 @@ import {
 import { redirectTo, withBasePath } from '../../utils/basePath';
 import { getPostBodyValidationError } from '../../utils/postBodyLimits';
 import { canPostToThread } from '../../utils/threadLock';
+import { canEphemeralUserPostToThread, isEphemeralUser, touchEphemeralActivity } from '../../services/ephemeralUsers';
+import { allowsEphemeralReplies } from '../../utils/replyApprovalTrust';
 
 function getEmbedPostedNotice(posted: string | undefined): { message: string; kind: 'success' | 'info' } | null {
   if (posted === 'pending') {
@@ -132,8 +134,21 @@ embedRouter.post('/threads/:id/posts', (req, res) => {
   }
 
   if (!req.user) {
+    if (allowsEphemeralReplies(thread.replyApprovalTrust)) {
+      return renderEmbedThread(req, res, threadId, {
+        error: 'Sign in or wait for the page to finish loading before posting.',
+        body: req.body.body ?? '',
+      });
+    }
     const next = withBasePath(`/embed/auth-return?threadId=${encodeURIComponent(threadId)}`);
     return redirectTo(res, `/login?next=${encodeURIComponent(next)}`);
+  }
+
+  if (!canEphemeralUserPostToThread(thread.replyApprovalTrust, req.user)) {
+    return renderEmbedThread(req, res, threadId, {
+      error: 'You cannot post comments on this thread.',
+      body: req.body.body ?? '',
+    });
   }
 
   if (!canPostToThread(!!thread.isLocked, req.user)) {
@@ -152,13 +167,18 @@ embedRouter.post('/threads/:id/posts', (req, res) => {
     });
   }
 
-  const approvalStatus = resolveReplyApproval(req.user.trust, thread.replyApprovalTrust);
+  const approvalStatus = resolveReplyApproval(req.user.trust, thread.replyApprovalTrust, {
+    isEphemeral: isEphemeralUser(req.user),
+  });
   createPost(db, {
     threadId,
     authorUserId: req.user.id,
     body,
     approvalStatus,
   });
+  if (isEphemeralUser(req.user)) {
+    touchEphemeralActivity(db, req.user.id);
+  }
 
   const posted = approvalStatus === 'approved' ? '1' : 'pending';
   redirectTo(res, appendEmbedPaddingQuery(`/embed/threads/${threadId}?posted=${posted}`, req.query));

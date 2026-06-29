@@ -136,3 +136,19 @@ This prints the `scp` command to run. For a live-safe backup while the server is
 ## Discord notifications
 
 Optional. Notify cron uses the same container and env file — see [NOTIFICATIONS.md](NOTIFICATIONS.md).
+
+---
+
+## Ephemeral account cleanup
+
+Inactive ephemeral (anonymous) accounts are removed after 7 days without activity. Schedule daily on the host, using the same env file and volume as the forum container:
+
+```bash
+0 3 * * * docker run --rm --env-file /home/admin/forum-furiosum/.env -v /home/admin/forum-furiosum:/data 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest node dist/cleanup-ephemeral.js
+```
+
+For local development:
+
+```bash
+npm run cleanup:ephemeral
+```

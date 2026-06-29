@@ -4,7 +4,8 @@ import type { User, PaginatedResult } from '../models';
 import { hashPassword } from './auth';
 import { deleteUserSessions } from './session';
 import { writeAuditLog } from './moderation';
-import { redactedEmailForId, redactedUsernameForId, isValidUsername } from '../utils/authorDisplay';
+import { redactedEmailForId, redactedUsernameForId } from '../utils/authorDisplay';
+import { getUsernameValidationError } from '../utils/usernameValidation';
 import { getUserByUsername } from './auth';
 
 export function getUserById(db: Database.Database, id: string): User | null {
@@ -110,8 +111,9 @@ export function adminSetUsername(
   reason?: string
 ): { success: boolean; error?: string } {
   const trimmed = username.trim();
-  if (!isValidUsername(trimmed)) {
-    return { success: false, error: 'Username must be 3–24 alphanumeric characters' };
+  const usernameError = getUsernameValidationError(trimmed);
+  if (usernameError) {
+    return { success: false, error: usernameError };
   }
 
   const user = getUserByIdForAdmin(db, userId);

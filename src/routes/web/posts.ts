@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { getDb } from '../../db/db';
 import { getPostById, updatePost } from '../../services/posts';
 import { getThreadById } from '../../services/threads';
-import { requireAuth } from '../../middleware/requireAuth';
+import { requireRegisteredUser } from '../../middleware/requireAuth';
 import { csrfProtection } from '../../middleware/csrf';
 import { redirectTo } from '../../utils/basePath';
 import { getPostBodyValidationError } from '../../utils/postBodyLimits';
@@ -11,7 +11,7 @@ import { canEditPostOnThread } from '../../utils/threadLock';
 export const postsWebRouter = Router();
 
 // GET /posts/:id/edit
-postsWebRouter.get('/:id/edit', requireAuth, (req, res) => {
+postsWebRouter.get('/:id/edit', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const post = getPostById(db, (req.params.id as string), 'admin');
   if (!post) {return res.status(404).render('error', { title: 'Not Found', message: 'Post not found', statusCode: 404 });}
@@ -28,7 +28,7 @@ postsWebRouter.get('/:id/edit', requireAuth, (req, res) => {
 });
 
 // POST /posts/:id/edit
-postsWebRouter.post('/:id/edit', requireAuth, (req, res) => {
+postsWebRouter.post('/:id/edit', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const post = getPostById(db, (req.params.id as string), 'admin');
   if (!post) {return res.status(404).render('error', { title: 'Not Found', message: 'Post not found', statusCode: 404 });}

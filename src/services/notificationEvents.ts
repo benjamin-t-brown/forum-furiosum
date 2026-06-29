@@ -156,7 +156,7 @@ const DEFAULT_LIMIT = 500;
 const MAX_LIMIT = 2000;
 
 function dateRangeClause(column: string): string {
-  return `${column} >= ? AND ${column} < ?`;
+  return `datetime(${column}) >= datetime(?) AND datetime(${column}) < datetime(?)`;
 }
 
 function parseRoleChangeReason(reason: string | null): { previousRole: string | null; newRole: string | null } {
@@ -402,7 +402,7 @@ export function listNotificationEvents(
     const rows = db.prepare(`
       SELECT id, username, role, createdAt
       FROM users
-      WHERE ${dateRangeClause('createdAt')} AND isDeleted = 0
+      WHERE ${dateRangeClause('createdAt')} AND isDeleted = 0 AND isEphemeral = 0
     `).all(options.since, options.until) as Array<{
       id: string;
       username: string;

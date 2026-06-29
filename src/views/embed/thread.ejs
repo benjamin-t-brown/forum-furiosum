@@ -1,7 +1,7 @@
 <%- include('layout-top', { title: title }) %>
 
 <div class="embed-shell"<% if (paddingStyle) { %> style="<%= paddingStyle %>"<% } %>>
-  <div class="embed-thread thread-view" data-thread-id="<%= threadId %>" data-draft-key="<%= draftKey %>" data-auth-return-url="<%= authReturnUrl %>">
+  <div class="embed-thread thread-view" data-thread-id="<%= threadId %>" data-reply-approval-trust="<%= thread.replyApprovalTrust || '' %>" data-draft-key="<%= draftKey %>" data-auth-return-url="<%= authReturnUrl %>">
     <% if (notice) { %><div class="<%= notice.kind === 'success' ? 'success-msg' : 'notice-msg' %>"><%= notice.message %></div><% } %>
     <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
 
@@ -50,20 +50,37 @@
     <% } %>
 
     <div class="reply-form">
-      <% if (canPostToThread(!!thread.isLocked, user)) { %>
+      <% if (canPostToThread(!!thread.isLocked, user) && user && !user.isEphemeral) { %>
+      <h3>Add a comment</h3>
+      <form id="embed-compose-form" class="ephemeral-reply-form" method="POST" action="<%= url('/embed/threads/' + (threadId) + '/posts') %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <textarea id="embed-compose-body" name="body" rows="6" placeholder="Write your comment…" maxlength="<%= maxPostBodyLength %>"><%= body %></textarea>
+        <div class="embed-compose-actions">
+          <button type="submit" class="btn">Post comment</button>
+          <span class="embed-signed-in">Signed in as <%= user.username %></span>
+        </div>
+      </form>
+      <% } else if (thread.replyApprovalTrust === 'ephemeral' && canPostToThread(!!thread.isLocked, null)) { %>
+      <h3>Add a comment</h3>
+      <p class="ephemeral-auth-status"><% if (user && user.isEphemeral) { %>Posting as <%= user.username %><% } else { %>Loading anonymous session…<% } %></p>
+      <form id="embed-compose-form" class="ephemeral-reply-form" method="POST" action="<%= url('/embed/threads/' + (threadId) + '/posts') %>"<% if (!user || !user.isEphemeral) { %> disabled<% } %>>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <textarea id="embed-compose-body" name="body" rows="6" placeholder="Write your comment…" maxlength="<%= maxPostBodyLength %>"<% if (!user || !user.isEphemeral) { %> disabled<% } %>><%= body %></textarea>
+        <div class="embed-compose-actions">
+          <button type="submit" class="btn"<% if (!user || !user.isEphemeral) { %> disabled<% } %>>Post comment</button>
+          <button type="button" class="btn btn-secondary" id="embed-register-btn">Create account</button>
+        </div>
+      </form>
+      <noscript><p class="login-prompt">JavaScript is required for anonymous comments.</p></noscript>
+      <% } else if (canPostToThread(!!thread.isLocked, user)) { %>
       <h3>Add a comment</h3>
       <form id="embed-compose-form" method="POST" action="<%= url('/embed/threads/' + (threadId) + '/posts') %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <textarea id="embed-compose-body" name="body" rows="6" placeholder="Write your comment…" maxlength="<%= maxPostBodyLength %>"><%= body %></textarea>
         <div class="embed-compose-actions">
-          <% if (user) { %>
-            <button type="submit" class="btn">Post comment</button>
-            <span class="embed-signed-in">Signed in as <%= user.username %></span>
-          <% } else { %>
-            <button type="submit" class="btn">Post comment</button>
-            <button type="button" class="btn btn-secondary" id="embed-login-btn">Log in to post</button>
-            <button type="button" class="btn btn-secondary" id="embed-register-btn">Create account</button>
-          <% } %>
+          <button type="submit" class="btn">Post comment</button>
+          <button type="button" class="btn btn-secondary" id="embed-login-btn">Log in to post</button>
+          <button type="button" class="btn btn-secondary" id="embed-register-btn">Create account</button>
         </div>
       </form>
       <% } else if (thread.isLocked) { %>

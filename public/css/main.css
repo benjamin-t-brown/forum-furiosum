@@ -351,10 +351,18 @@ a:hover { text-decoration: underline; }
   gap: 0.35rem;
   text-align: center;
   font-size: 0.8rem;
+  min-width: 0;
 }
 
 .post-author a { font-weight: bold; }
 .post-author small { color: var(--color-text-muted); }
+
+.post-author .author-byline,
+.post-author a {
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 
 .author-byline {
   display: flex;
@@ -370,6 +378,10 @@ a:hover { text-decoration: underline; }
   align-items: baseline;
   vertical-align: baseline;
   gap: 0.35rem;
+  max-width: 100%;
+  flex-wrap: wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .author-trust-badge {

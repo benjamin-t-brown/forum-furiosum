@@ -22,6 +22,8 @@
     "seed": "tsx scripts/seed-dev.ts --force",
     "notify": "tsx scripts/notify.ts",
     "notify:prod": "node dist/notify.js",
+    "notify:clear": "tsx scripts/clear-notify-state.ts",
+    "cleanup:ephemeral": "tsx scripts/cleanup-ephemeral.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "deps:check-scripts": "npm approve-scripts --allow-scripts-pending",

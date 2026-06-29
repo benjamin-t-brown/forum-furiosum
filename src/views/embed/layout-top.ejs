@@ -20,4 +20,4 @@
   </style>
   <% } %>
 </head>
-<body class="embed-body" data-logged-in="<%= user ? '1' : '0' %>" data-user-id="<%= user ? user.id : '' %>" data-base-path="<%= basePath %>">
+<body class="embed-body" data-logged-in="<%= user ? '1' : '0' %>" data-is-ephemeral="<%= user && user.isEphemeral ? '1' : '0' %>" data-user-id="<%= user ? user.id : '' %>" data-base-path="<%= basePath %>">

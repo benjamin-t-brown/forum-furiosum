@@ -145,6 +145,7 @@ describe('Post service', () => {
       expect(resolveReplyApproval('verified', 'verified')).toBe('approved');
       expect(resolveReplyApproval('new', null)).toBe('new');
       expect(resolveReplyApproval('trusted', null)).toBe('approved');
+      expect(resolveReplyApproval('unknown', 'ephemeral', { isEphemeral: true })).toBe('approved');
     });
   });
 });

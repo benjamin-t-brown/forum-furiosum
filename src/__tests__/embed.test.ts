@@ -89,11 +89,21 @@ describe('Embed routes', () => {
     expect(res.text).not.toContain('height=&quot;480&quot;');
   });
 
-  it('renders login prompt for anonymous users', async () => {
+  it('renders login prompt for anonymous users on non-ephemeral threads', async () => {
     const res = await request(app).get(`/embed/threads/${threadId}`);
     expect(res.status).toBe(200);
     expect(res.text).toContain('Log in to post');
     expect(res.text).toContain('Create account');
+  });
+
+  it('omits login button on ephemeral threads but keeps create account', async () => {
+    updateThread(db, threadId, { replyApprovalTrust: 'ephemeral' });
+
+    const res = await request(app).get(`/embed/threads/${threadId}`);
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain('Log in to post');
+    expect(res.text).toContain('Create account');
+    expect(res.text).toContain('Post comment');
   });
 
   it('applies configurable padding from the URL', async () => {

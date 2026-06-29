@@ -4,7 +4,7 @@ import { listCategories } from '../../services/categories';
 import { listThreads, getThreadById, createThread, updateThread, deleteThread } from '../../services/threads';
 import { listPosts, createPost, resolveReplyApproval, resolveContentApproval } from '../../services/posts';
 import { writeAuditLog } from '../../services/moderation';
-import { requireAuth } from '../../middleware/requireAuth';
+import { requireAuth, requireRegisteredUser } from '../../middleware/requireAuth';
 import { csrfProtection } from '../../middleware/csrf';
 import { renderBody } from '../../utils/renderBody';
 import { buildEmbedThreadUrl, buildEmbedSnippet } from '../../utils/embedPadding';
@@ -12,6 +12,7 @@ import { parseReplyApprovalTrust, REPLY_APPROVAL_TRUST_OPTIONS, replyApprovalTru
 import { getPostBodyValidationError } from '../../utils/postBodyLimits';
 import { redirectTo } from '../../utils/basePath';
 import { canPostToThread } from '../../utils/threadLock';
+import { canEphemeralUserPostToThread, isEphemeralUser, touchEphemeralActivity } from '../../services/ephemeralUsers';
 
 export const threadsWebRouter = Router();
 
@@ -36,7 +37,7 @@ function getPostedNotice(posted: string | undefined): { message: string; kind: '
 }
 
 // GET /threads/new
-threadsWebRouter.get('/new', requireAuth, (req, res) => {
+threadsWebRouter.get('/new', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const user = req.user!;
   const canModerateThread = user.role === 'admin' || user.role === 'moderator';
@@ -53,7 +54,7 @@ threadsWebRouter.get('/new', requireAuth, (req, res) => {
 });
 
 // POST /threads/new
-threadsWebRouter.post('/new', requireAuth, (req, res) => {
+threadsWebRouter.post('/new', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const user = req.user!;
   const canModerateThread = user.role === 'admin' || user.role === 'moderator';
@@ -132,7 +133,7 @@ threadsWebRouter.get('/:id', (req, res) => {
 });
 
 // GET /threads/:id/edit
-threadsWebRouter.get('/:id/edit', requireAuth, (req, res) => {
+threadsWebRouter.get('/:id/edit', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const thread = getThreadById(db, (req.params.id as string), 'admin');
   if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
@@ -154,7 +155,7 @@ threadsWebRouter.get('/:id/edit', requireAuth, (req, res) => {
 });
 
 // POST /threads/:id/edit
-threadsWebRouter.post('/:id/edit', requireAuth, (req, res) => {
+threadsWebRouter.post('/:id/edit', requireRegisteredUser, (req, res) => {
   const db = getDb();
   const thread = getThreadById(db, (req.params.id as string), 'admin');
   if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
@@ -215,6 +216,10 @@ threadsWebRouter.post('/:id/posts/new', requireAuth, (req, res) => {
   const thread = getThreadById(db, (req.params.id as string), req.user?.role);
   if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
 
+  if (!canEphemeralUserPostToThread(thread.replyApprovalTrust, req.user)) {
+    return res.status(403).render('error', { title: 'Forbidden', message: 'You cannot post replies on this thread.', statusCode: 403 });
+  }
+
   if (!canPostToThread(!!thread.isLocked, req.user)) {
     return res.status(403).render('error', { title: 'Forbidden', message: 'This thread is locked. Only moderators can post replies.', statusCode: 403 });
   }
@@ -246,7 +251,9 @@ threadsWebRouter.post('/:id/posts/new', requireAuth, (req, res) => {
     });
   }
 
-  const approvalStatus = resolveReplyApproval(req.user!.trust, thread.replyApprovalTrust);
+  const approvalStatus = resolveReplyApproval(req.user!.trust, thread.replyApprovalTrust, {
+    isEphemeral: isEphemeralUser(req.user),
+  });
   const threadId = req.params.id as string;
   createPost(db, {
     threadId,
@@ -254,6 +261,9 @@ threadsWebRouter.post('/:id/posts/new', requireAuth, (req, res) => {
     body,
     approvalStatus,
   });
+  if (isEphemeralUser(req.user)) {
+    touchEphemeralActivity(db, req.user!.id);
+  }
   const posted = approvalStatus === 'approved' ? '1' : 'pending';
   const { totalPages } = listPosts(db, threadId, {
     role: req.user!.role,

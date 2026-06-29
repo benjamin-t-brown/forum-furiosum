@@ -7,6 +7,9 @@
   </div>
 </div>
 <script>
+<% if (typeof clearEphemeralClient !== 'undefined' && clearEphemeralClient) { %>
+try { localStorage.removeItem('ff_ephemeral_client_id'); } catch (e) {}
+<% } %>
 setTimeout(function () {
   window.location.href = <%- JSON.stringify(next) %>;
 }, 2000);

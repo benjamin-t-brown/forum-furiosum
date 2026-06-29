@@ -1,10 +1,6 @@
 export const REDACTED_USERNAME = '[deleted]';
 
-export const USERNAME_REGEX = /^[A-Za-z0-9]{3,24}$/;
-
-export function isValidUsername(username: string): boolean {
-  return USERNAME_REGEX.test(username);
-}
+export { USERNAME_REGEX, isValidUsername, getUsernameValidationError } from './usernameValidation';
 
 /** SQL fragment: resolved display name for a joined users row aliased as `u`. */
 export const AUTHOR_USERNAME_SQL = `CASE WHEN u.isDeleted = 1 THEN '${REDACTED_USERNAME}' ELSE u.username END as authorUsername`;

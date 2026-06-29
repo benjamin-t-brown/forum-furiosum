@@ -39,6 +39,11 @@ describe('User profile changes', () => {
       expect(result.success).toBe(false);
     });
 
+    it('rejects reserved and banned usernames', () => {
+      expect(createUsernameChangeRequest(db, userId, 'admin').success).toBe(false);
+      expect(createUsernameChangeRequest(db, userId, 'badfuckname').success).toBe(false);
+    });
+
     it('rejects duplicate pending requests', () => {
       createUsernameChangeRequest(db, userId, 'newname');
       const result = createUsernameChangeRequest(db, userId, 'othername');

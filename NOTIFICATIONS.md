@@ -132,14 +132,24 @@ Docker:
 
 ### Reset notification state
 
-There is no reset CLI. Update state directly in SQLite (`DB_PATH`):
+**Skip all pending Discord notifications** (does not post to Discord; next notify run sees only new activity after this moment):
+
+```bash
+npm run notify:clear
+# production / Docker (after build):
+node dist/clear-notify-state.js
+```
+
+This sets `notify_poll_state.lastUntil` to the current time and clears `notified_events`. The next `npm run notify` (or `--dry-run`) polls an empty window and posts nothing unless new forum events occur afterward.
+
+Manual SQL (same effect as `notify:clear`):
 
 ```sql
 -- Inspect
 SELECT * FROM notify_poll_state;
 SELECT eventId, notifiedAt FROM notified_events ORDER BY notifiedAt DESC LIMIT 20;
 
--- Full reset (next run behaves like first run)
+-- Full reset (next run behaves like first run — replays lookback window; may send Discord)
 DELETE FROM notified_events;
 DELETE FROM notify_poll_state WHERE id = 'default';
 

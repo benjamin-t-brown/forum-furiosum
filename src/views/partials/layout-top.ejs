@@ -20,7 +20,7 @@
   <% } %>
   <%# theme.js disabled until dark mode toggle is fixed %>
 </head>
-<body data-user-id="<%= user ? user.id : '' %>" data-base-path="<%= basePath %>">
+<body data-user-id="<%= user ? user.id : '' %>" data-is-ephemeral="<%= user && user.isEphemeral ? '1' : '0' %>" data-logged-in="<%= user ? '1' : '0' %>" data-base-path="<%= basePath %>">
 <header class="topbar">
   <div class="topbar-inner">
     <a href="<%= url('/') %>" class="topbar-brand"><%= forumName %></a>

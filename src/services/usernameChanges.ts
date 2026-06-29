@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getUserByUsername } from './auth';
 import { updateUser } from './users';
 import { writeAuditLog } from './moderation';
-import { isValidUsername } from '../utils/authorDisplay';
+import { isValidUsername, getUsernameValidationError } from '../utils/usernameValidation';
 
 export interface UsernameChangeRequest {
   id: string;
@@ -53,7 +53,7 @@ export function createUsernameChangeRequest(
   requestedUsername: string
 ): { success: boolean; error?: string; request?: UsernameChangeRequest } {
   if (!isValidUsername(requestedUsername)) {
-    return { success: false, error: 'Username must be 3–24 alphanumeric characters' };
+    return { success: false, error: getUsernameValidationError(requestedUsername) ?? 'Invalid username' };
   }
 
   const user = db.prepare('SELECT id, username FROM users WHERE id = ? AND isDeleted = 0').get(userId) as

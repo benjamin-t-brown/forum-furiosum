@@ -99,9 +99,13 @@ export function resolveContentApproval(trust: UserTrust): ApprovalStatus {
 
 export function resolveReplyApproval(
   trust: UserTrust,
-  replyApprovalTrust: ReplyApprovalTrust | null = null
+  replyApprovalTrust: ReplyApprovalTrust | null = null,
+  options: { isEphemeral?: boolean } = {}
 ): ApprovalStatus {
   if (trust === 'banned') {return 'new';}
+  if (replyApprovalTrust === 'ephemeral') {
+    return 'approved';
+  }
   if (replyApprovalTrust === null) {return resolveContentApproval(trust);}
   return meetsReplyApprovalTrust(trust, replyApprovalTrust) ? 'approved' : 'new';
 }

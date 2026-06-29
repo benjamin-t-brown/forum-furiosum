@@ -55,3 +55,11 @@ export function pruneNotifiedEvents(db: Database.Database, keepDays = DEFAULT_PR
   `).run(`-${keepDays} days`);
   return result.changes;
 }
+
+/** Skip all backlog: advance watermark to now and clear notified-event records. Does not call Discord. */
+export function clearNotifyState(db: Database.Database, now = new Date()): { lastUntil: string; clearedNotifiedCount: number } {
+  const lastUntil = now.toISOString();
+  const clearedNotifiedCount = db.prepare('DELETE FROM notified_events').run().changes;
+  saveNotifyLastUntil(db, lastUntil);
+  return { lastUntil, clearedNotifiedCount };
+}

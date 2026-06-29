@@ -39,7 +39,7 @@ describe('Session service', () => {
 
   it('exports correct cookie name and max age', () => {
     expect(SESSION_COOKIE_NAME).toBe('ff_session');
-    expect(SESSION_MAX_AGE_MS).toBe(14 * 24 * 60 * 60 * 1000);
+    expect(SESSION_MAX_AGE_MS).toBe(365 * 24 * 60 * 60 * 1000);
   });
 
   it('deleteExpiredSessions removes expired sessions', () => {

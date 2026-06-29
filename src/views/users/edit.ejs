@@ -24,10 +24,10 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="form-group">
           <label for="requestedUsername">Request new username</label>
-          <input type="text" id="requestedUsername" name="requestedUsername" pattern="^[A-Za-z0-9]{3,24}$"
+          <input type="text" id="requestedUsername" name="requestedUsername" pattern="^[A-Za-z0-9_]{3,24}$"
             maxlength="24" required placeholder="New username">
           <small style="display:block;margin-top:0.25rem;color:var(--color-text-muted)">
-            3–24 alphanumeric characters. Requires admin approval.
+            3–24 characters (letters, numbers, underscores). Requires admin approval.
           </small>
         </div>
         <button type="submit" class="btn">Request Username Change</button>

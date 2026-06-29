@@ -10,6 +10,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
+  isEphemeral: 0 | 1;
+  lastActivityAt: string | null;
 }
 
 export interface Category {
@@ -95,6 +97,6 @@ export interface PaginatedResult<T> {
 // Extended types for UI/API responses
 export type UserRole = 'admin' | 'moderator' | 'user';
 export type UserTrust = 'new' | 'unknown' | 'trusted' | 'verified' | 'banned';
-export type ReplyApprovalTrust = 'new' | 'unknown' | 'trusted' | 'verified';
+export type ReplyApprovalTrust = 'new' | 'unknown' | 'trusted' | 'verified' | 'ephemeral';
 export type ApprovalStatus = 'new' | 'approved' | 'unapproved' | 'unknown';
 export type TargetType = 'user' | 'thread' | 'post';

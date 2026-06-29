@@ -446,7 +446,7 @@ paths:
               properties:
                 username:
                   type: string
-                  pattern: '^[A-Za-z0-9]{3,24}$'
+                  pattern: '^[A-Za-z0-9_]{3,24}$'
                 email:
                   type: string
                   format: email

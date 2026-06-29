@@ -38,6 +38,7 @@
     var draftKey = root.dataset.draftKey;
     var authReturnUrl = root.dataset.authReturnUrl;
     var loggedIn = document.body.dataset.loggedIn === '1';
+    var ephemeralAllowed = root.dataset.replyApprovalTrust === 'ephemeral';
     var textarea = document.getElementById('embed-compose-body');
     var form = document.getElementById('embed-compose-form');
 
@@ -69,11 +70,19 @@
       registerBtn.addEventListener('click', function () { openAuthPopup('/register'); });
     }
 
-    if (form && !loggedIn) {
+    if (form && !loggedIn && !ephemeralAllowed) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (textarea) { localStorage.setItem(draftKey, textarea.value); }
         openAuthPopup('/login');
+      });
+    }
+
+    if (form && !loggedIn && ephemeralAllowed) {
+      form.addEventListener('submit', function (e) {
+        if (document.body.dataset.loggedIn !== '1') {
+          e.preventDefault();
+        }
       });
     }
 

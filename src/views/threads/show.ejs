@@ -1,6 +1,6 @@
 <%- include('../partials/layout-top', { title: title }) %>
 
-<div class="thread-view">
+<div class="thread-view" data-thread-id="<%= thread.id %>" data-reply-approval-trust="<%= thread.replyApprovalTrust || '' %>">
   <div class="thread-header">
     <h1 class="thread-title"><%= thread.title %></h1>
     <% if (thread.isLocked) { %>
@@ -68,7 +68,7 @@
     <% } %>
   </div>
 
-  <% if (user && canPostToThread(!!thread.isLocked, user)) { %>
+  <% if (user && canPostToThread(!!thread.isLocked, user) && !user.isEphemeral) { %>
     <div class="reply-form">
       <h3>Post a Reply</h3>
       <% if (typeof error !== 'undefined' && error) { %><div class="error-msg"><%= error %></div><% } %>
@@ -77,6 +77,21 @@
         <textarea name="body" rows="6" placeholder="Write your reply..." maxlength="<%= maxPostBodyLength %>" required></textarea>
         <button type="submit" class="btn">Post Reply</button>
       </form>
+    </div>
+  <% } else if (thread.replyApprovalTrust === 'ephemeral' && canPostToThread(!!thread.isLocked, null)) { %>
+    <div class="reply-form">
+      <h3>Post a Reply</h3>
+      <% if (typeof error !== 'undefined' && error) { %><div class="error-msg"><%= error %></div><% } %>
+      <p class="ephemeral-auth-status"><% if (user && user.isEphemeral) { %>Posting as <%= user.username %><% } else { %>Loading anonymous session…<% } %></p>
+      <form class="ephemeral-reply-form" method="POST" action="<%= url('/threads/' + (thread.id) + '/posts/new') %>"<% if (!user || !user.isEphemeral) { %> disabled<% } %>>
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+        <textarea name="body" rows="6" placeholder="Write your reply..." maxlength="<%= maxPostBodyLength %>" required<% if (!user || !user.isEphemeral) { %> disabled<% } %>></textarea>
+        <button type="submit" class="btn"<% if (!user || !user.isEphemeral) { %> disabled<% } %>>Post Reply</button>
+        <% if (!user || user.isEphemeral) { %>
+          <a href="<%= url('/register') %>" class="btn btn-secondary">Create account</a>
+        <% } %>
+      </form>
+      <noscript><p class="login-prompt"><a href="<%= url('/login') %>">Log in</a> to reply (JavaScript required for anonymous replies).</p></noscript>
     </div>
   <% } else if (user && thread.isLocked) { %>
     <p class="login-prompt">This thread is locked. Only moderators can post replies.</p>
