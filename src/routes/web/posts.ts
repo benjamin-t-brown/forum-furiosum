@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { getDb } from '../../db/db';
 import { getPostById, updatePost } from '../../services/posts';
+import { getThreadById } from '../../services/threads';
 import { requireAuth } from '../../middleware/requireAuth';
 import { csrfProtection } from '../../middleware/csrf';
+import { redirectTo } from '../../utils/basePath';
+import { getPostBodyValidationError } from '../../utils/postBodyLimits';
+import { canEditPostOnThread } from '../../utils/threadLock';
 
 export const postsWebRouter = Router();
 
@@ -13,7 +17,10 @@ postsWebRouter.get('/:id/edit', requireAuth, (req, res) => {
   if (!post) {return res.status(404).render('error', { title: 'Not Found', message: 'Post not found', statusCode: 404 });}
 
   const user = req.user!;
-  if (post.authorUserId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
+  const thread = getThreadById(db, post.threadId, 'admin');
+  if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
+
+  if (!canEditPostOnThread(!!thread.isLocked, user, post.authorUserId, user.id)) {
     return res.status(403).render('error', { title: 'Forbidden', message: 'Cannot edit this post', statusCode: 403 });
   }
 
@@ -27,15 +34,19 @@ postsWebRouter.post('/:id/edit', requireAuth, (req, res) => {
   if (!post) {return res.status(404).render('error', { title: 'Not Found', message: 'Post not found', statusCode: 404 });}
 
   const user = req.user!;
-  if (post.authorUserId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
+  const thread = getThreadById(db, post.threadId, 'admin');
+  if (!thread) {return res.status(404).render('error', { title: 'Not Found', message: 'Thread not found', statusCode: 404 });}
+
+  if (!canEditPostOnThread(!!thread.isLocked, user, post.authorUserId, user.id)) {
     return res.status(403).render('error', { title: 'Forbidden', message: 'Cannot edit this post', statusCode: 403 });
   }
 
   const { body } = req.body;
-  if (!body || body.length < 1 || body.length > 10000) {
-    return res.render('posts/edit', { title: 'Edit Post', post, csrfToken: res.locals.csrfToken, error: 'Post body is required' });
+  const bodyError = getPostBodyValidationError(body ?? '');
+  if (bodyError) {
+    return res.render('posts/edit', { title: 'Edit Post', post, csrfToken: res.locals.csrfToken, error: bodyError });
   }
 
   updatePost(db, (req.params.id as string), { body, lastEditedByUserId: user.id });
-  res.redirect(`/threads/${post.threadId}`);
+  redirectTo(res, `/threads/${post.threadId}`);
 });

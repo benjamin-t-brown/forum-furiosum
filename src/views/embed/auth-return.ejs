@@ -20,7 +20,7 @@
 
   if (draft.trim()) {
     var body = '_csrf=' + encodeURIComponent(csrf) + '&body=' + encodeURIComponent(draft);
-    fetch('/embed/threads/' + encodeURIComponent(threadId) + '/posts', {
+    fetch(<%- JSON.stringify(url('/embed/threads/' + threadId + '/posts')) %>, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body,

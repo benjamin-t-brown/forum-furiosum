@@ -1,0 +1,11 @@
+<div class="form-group">
+  <label for="replyApprovalTrust">Reply approval threshold</label>
+  <select name="replyApprovalTrust" id="replyApprovalTrust">
+    <% replyApprovalTrustOptions.forEach(function(opt) { %>
+      <option value="<%= opt.value %>"<%= (replyApprovalTrust || '') === opt.value ? ' selected' : '' %>><%= opt.label %></option>
+    <% }); %>
+  </select>
+  <p style="font-size:0.85rem;color:var(--color-text-muted);margin-top:0.25rem">
+    Replies matching this trust requirement are approved automatically; others go to the moderation queue.
+  </p>
+</div>

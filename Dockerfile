@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 RUN corepack enable
 
@@ -14,7 +14,7 @@ COPY src/ ./src/
 RUN npm run prod 2>/dev/null || npx tsc
 
 # Stage 2: Production
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 RUN corepack enable
 

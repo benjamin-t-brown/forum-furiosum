@@ -1,9 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="embed-page" data-theme="<%= user && user.theme ? user.theme : 'light' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <link rel="stylesheet" href="/css/embed.css">
+  <title><%= title %> — <%= forumName %></title>
+  <link rel="icon" href="<%= url('/favicon.png') %>" type="image/png">
+  <link rel="stylesheet" href="<%= url('/css/main.css') %>">
+  <link rel="stylesheet" href="<%= url('/css/embed.css') %>">
+  <% if (settings) { %>
+  <style>
+    :root, [data-theme="dark"] {
+      --color-primary: <%= settings.themeColorPrimary %>;
+      --color-accent: <%= settings.themeColorAccent %>;
+      --color-surface: <%= settings.themeColorSurface %>;
+      --color-badge-bg: <%= settings.themeColorSurface %>;
+      --topbar-bg: <%= settings.themeColorPrimary %>;
+      --color-border: <%= settings.themeColorPrimary %>;
+    }
+  </style>
+  <% } %>
 </head>
-<body class="embed-body" data-logged-in="<%= user ? '1' : '0' %>">
+<body class="embed-body" data-logged-in="<%= user ? '1' : '0' %>" data-user-id="<%= user ? user.id : '' %>" data-base-path="<%= basePath %>">

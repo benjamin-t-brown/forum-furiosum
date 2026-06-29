@@ -3,12 +3,14 @@ import { getDb } from '../../db/db';
 import { getForumSettings } from '../../services/settings';
 import { csrfProtection } from '../../middleware/csrf';
 import { homeRouter } from './home';
+import { categoriesWebRouter } from './categories';
 import { authWebRouter } from './auth';
 import { threadsWebRouter } from './threads';
 import { postsWebRouter } from './posts';
 import { usersWebRouter } from './users';
 import { adminWebRouter } from './admin';
 import { embedRouter } from './embed';
+import { withBasePath } from '../../utils/basePath';
 
 export const webRouter = Router();
 
@@ -22,11 +24,13 @@ webRouter.use((req: Request, res: Response, next: NextFunction) => {
   res.locals.settings = settings;
   res.locals.user = req.user ?? null;
   res.locals.forumName = settings.forumName;
+  res.locals.currentPath = withBasePath(req.originalUrl);
   res.locals.csrfToken = req.csrfToken();
   next();
 });
 
 webRouter.use('/', homeRouter);
+webRouter.use('/categories', categoriesWebRouter);
 webRouter.use('/', authWebRouter);
 webRouter.use('/embed', embedRouter);
 webRouter.use('/threads', threadsWebRouter);

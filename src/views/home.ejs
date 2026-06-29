@@ -1,18 +1,35 @@
 <%- include('partials/layout-top', { title: title }) %>
 
 <div class="forum-home">
+  <% if (typeof notice !== 'undefined' && notice) { %><div class="notice-msg"><%= notice %></div><% } %>
+  <% if (typeof homeIntroHtml !== 'undefined' && homeIntroHtml) { %>
+    <div class="forum-intro"><%- homeIntroHtml %></div>
+  <% } %>
+  <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+    <form method="GET" action="<%= url('/') %>" class="staff-thread-filters">
+      <label class="staff-filter-label">
+        <input type="checkbox" name="showDeleted" value="1" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
+        Show deleted
+      </label>
+    </form>
+  <% } %>
   <% if (categories.length === 0) { %>
     <p class="empty-state">No categories yet.</p>
   <% } else { %>
     <% categories.forEach(function(cat) { %>
       <div class="category-block">
         <div class="category-header">
-          <h2 class="category-name"><%= cat.name %></h2>
+          <h2 class="category-name"><a href="<%= url('/categories/' + (cat.slug) + '') %>"><%= cat.name %></a></h2>
           <% if (cat.description) { %><p class="category-desc"><%= cat.description %></p><% } %>
           <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
             <% if (cat.isHidden) { %><span class="badge badge-hidden">Hidden</span><% } %>
           <% } %>
         </div>
+        <% if (user) { %>
+          <div class="category-actions">
+            <a href="<%= url('/threads/new?categoryId=' + (cat.id) + '') %>" class="btn btn-sm">+ New Thread</a>
+          </div>
+        <% } %>
         <table class="thread-table">
           <thead>
             <tr>
@@ -23,18 +40,18 @@
             </tr>
           </thead>
           <tbody>
-            <% if (cat.recentThreads.length === 0) { %>
-              <tr><td colspan="4" class="empty-row">No threads yet.<% if (user) { %> <a href="/threads/new?categoryId=<%= cat.id %>">Start one!</a><% } %></td></tr>
+            <% if (cat.threads.data.length === 0) { %>
+              <tr><td colspan="4" class="empty-row">No threads yet.<% if (user) { %> <a href="<%= url('/threads/new?categoryId=' + (cat.id) + '') %>">Start one!</a><% } %></td></tr>
             <% } else { %>
-              <% cat.recentThreads.forEach(function(thread) { %>
+              <% cat.threads.data.forEach(function(thread) { %>
                 <tr>
                   <td class="td-title">
-                    <a href="/threads/<%= thread.id %>"><%= thread.title %></a>
+                    <a href="<%= url('/threads/' + (thread.id) + '') %>"><%= thread.title %></a>
                     <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
                       <%- include('partials/status-badge', { item: thread }) %>
                     <% } %>
                   </td>
-                  <td class="td-author"><a href="/users/<%= thread.authorUserId %>"><%= thread.authorUsername %></a></td>
+                  <td class="td-author"><%- include('partials/author-link', { authorUsername: thread.authorUsername, authorUserId: thread.authorUserId, authorIsDeleted: thread.authorIsDeleted, authorTrust: thread.authorTrust }) %></td>
                   <td class="td-replies"><%= thread.postCount %></td>
                   <td class="td-activity"><%= formatDate(thread.updatedAt) %></td>
                 </tr>
@@ -42,9 +59,11 @@
             <% } %>
           </tbody>
         </table>
-        <div class="category-actions">
-          <% if (user) { %><a href="/threads/new?categoryId=<%= cat.id %>" class="btn btn-sm">+ New Thread</a><% } %>
-        </div>
+        <% if (cat.threads.totalPages > 1) { %>
+          <div class="category-see-all">
+            <a href="<%= url('/categories/' + (cat.slug) + '') %>" class="btn btn-sm">See all</a>
+          </div>
+        <% } %>
       </div>
     <% }); %>
   <% } %>

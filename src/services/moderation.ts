@@ -2,6 +2,33 @@ import Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import type { ModerationAuditLog, ApprovalStatus, TargetType, PaginatedResult } from '../models';
 import { isValidStatusTransition } from './threads';
+import { listPendingUsernameChangeRequests } from './usernameChanges';
+import { AUTHOR_USERNAME_SQL } from '../utils/authorDisplay';
+
+export interface PendingApprovalDetails {
+  counts: { threads: number; posts: number; usernameChanges: number };
+  threads: Array<{
+    id: string;
+    title: string;
+    createdAt: string;
+    authorUsername: string;
+    categoryName: string;
+  }>;
+  posts: Array<{
+    id: string;
+    threadId: string;
+    threadTitle: string;
+    createdAt: string;
+    authorUsername: string;
+  }>;
+  usernameChanges: Array<{
+    id: string;
+    userId: string;
+    currentUsername: string;
+    requestedUsername: string;
+    createdAt: string;
+  }>;
+}
 
 export function writeAuditLog(
   db: Database.Database,
@@ -109,6 +136,20 @@ export function hideThread(
   return { success: true };
 }
 
+export function lockThread(
+  db: Database.Database,
+  threadId: string,
+  actorUserId: string,
+  lock: boolean,
+  reason?: string
+): { success: boolean; error?: string } {
+  const thread = db.prepare('SELECT id FROM threads WHERE id = ?').get(threadId);
+  if (!thread) {return { success: false, error: 'Thread not found' };}
+  db.prepare('UPDATE threads SET isLocked = ?, updatedAt = datetime(\'now\') WHERE id = ?').run(lock ? 1 : 0, threadId);
+  writeAuditLog(db, { actorUserId, targetType: 'thread', targetId: threadId, action: lock ? 'lock' : 'unlock', reason });
+  return { success: true };
+}
+
 export function approvePost(
   db: Database.Database,
   postId: string,
@@ -139,8 +180,41 @@ export function hidePost(
   return { success: true };
 }
 
-export function getPendingApprovals(db: Database.Database): { threads: number; posts: number } {
+export function getPendingApprovals(db: Database.Database): { threads: number; posts: number; usernameChanges: number } {
   const threads = (db.prepare('SELECT COUNT(*) as count FROM threads WHERE approvalStatus = \'new\' AND isDeleted = 0').get() as { count: number }).count;
   const posts = (db.prepare('SELECT COUNT(*) as count FROM posts WHERE approvalStatus = \'new\' AND isDeleted = 0').get() as { count: number }).count;
-  return { threads, posts };
+  const usernameChanges = (db.prepare("SELECT COUNT(*) as count FROM username_change_requests WHERE status = 'new'").get() as { count: number }).count;
+  return { threads, posts, usernameChanges };
+}
+
+export function listPendingApprovalDetails(db: Database.Database): PendingApprovalDetails {
+  const counts = getPendingApprovals(db);
+
+  const threads = db.prepare(`
+    SELECT t.id, t.title, t.createdAt, ${AUTHOR_USERNAME_SQL}, c.name as categoryName
+    FROM threads t
+    JOIN users u ON t.authorUserId = u.id
+    JOIN categories c ON t.categoryId = c.id
+    WHERE t.approvalStatus = 'new' AND t.isDeleted = 0
+    ORDER BY t.createdAt ASC
+  `).all() as PendingApprovalDetails['threads'];
+
+  const posts = db.prepare(`
+    SELECT p.id, p.threadId, p.createdAt, ${AUTHOR_USERNAME_SQL}, th.title as threadTitle
+    FROM posts p
+    JOIN users u ON p.authorUserId = u.id
+    JOIN threads th ON p.threadId = th.id
+    WHERE p.approvalStatus = 'new' AND p.isDeleted = 0
+    ORDER BY p.createdAt ASC
+  `).all() as PendingApprovalDetails['posts'];
+
+  const usernameChanges = listPendingUsernameChangeRequests(db, 500).map((r) => ({
+    id: r.id,
+    userId: r.userId,
+    currentUsername: r.currentUsername,
+    requestedUsername: r.requestedUsername,
+    createdAt: r.createdAt,
+  }));
+
+  return { counts, threads, posts, usernameChanges };
 }

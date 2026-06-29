@@ -2,10 +2,12 @@ import Database from 'better-sqlite3';
 
 export interface ForumSettings {
   forumName: string;
+  homeIntro: string;
   topBarLinks: Array<{ label: string; url: string }>;
   featuredCategories: string[];
   themeColorPrimary: string;
   themeColorAccent: string;
+  themeColorSurface: string;
 }
 
 export function getSetting(db: Database.Database, key: string): string | null {
@@ -36,17 +38,21 @@ export function getForumSettings(db: Database.Database): ForumSettings {
 
   return {
     forumName: raw.forumName ?? 'Forum Furiosum',
+    homeIntro: raw.homeIntro ?? '',
     topBarLinks,
     featuredCategories,
-    themeColorPrimary: raw.themeColorPrimary ?? '#8eb1c7',
+    themeColorPrimary: raw.themeColorPrimary ?? '#a8cbe1',
     themeColorAccent: raw.themeColorAccent ?? '#b02e0c',
+    themeColorSurface: raw.themeColorSurface ?? '#ebeae6',
   };
 }
 
 export function updateForumSettings(db: Database.Database, data: Partial<ForumSettings>): void {
   if (data.forumName !== undefined) {setSetting(db, 'forumName', data.forumName);}
+  if (data.homeIntro !== undefined) {setSetting(db, 'homeIntro', data.homeIntro);}
   if (data.topBarLinks !== undefined) {setSetting(db, 'topBarLinks', JSON.stringify(data.topBarLinks));}
   if (data.featuredCategories !== undefined) {setSetting(db, 'featuredCategories', JSON.stringify(data.featuredCategories));}
   if (data.themeColorPrimary !== undefined) {setSetting(db, 'themeColorPrimary', data.themeColorPrimary);}
   if (data.themeColorAccent !== undefined) {setSetting(db, 'themeColorAccent', data.themeColorAccent);}
+  if (data.themeColorSurface !== undefined) {setSetting(db, 'themeColorSurface', data.themeColorSurface);}
 }

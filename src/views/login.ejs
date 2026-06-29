@@ -3,7 +3,7 @@
 <div class="form-page auth-form">
   <h1>Login</h1>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
-  <form method="POST" action="/login">
+  <form method="POST" action="<%= url('/login') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="next" value="<%= next %>">
     <div class="form-group">
@@ -15,7 +15,7 @@
       <input type="password" id="password" name="password" required autocomplete="current-password">
     </div>
     <button type="submit" class="btn">Login</button>
-    <p>No account? <a href="/register<% if (next && next !== '/') { %>?next=<%= encodeURIComponent(next) %><% } %>">Register</a></p>
+    <p>No account? <a href="<%= url('/register') %><% if (next && next !== url('/')) { %>?next=<%= encodeURIComponent(next) %><% } %>">Register</a></p>
   </form>
 </div>
 

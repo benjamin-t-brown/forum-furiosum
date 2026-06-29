@@ -8,15 +8,19 @@
     <h2 style="font-size:1rem;margin-bottom:0.5rem"><%= thread.title %></h2>
     <p style="font-size:0.8rem;color:var(--color-text-muted)">
       By <strong><%= thread.authorUsername %></strong> in <strong><%= thread.categoryName %></strong>
+      <% if (thread.isDeleted) { %>
+      &mdash; <span class="badge badge-deleted">Deleted</span>
+      <% } else { %>
       &mdash; Status: <strong><%= thread.approvalStatus %></strong>
       <% if (thread.isHidden) { %> | <span class="badge badge-hidden">Hidden</span><% } %>
-      <% if (thread.isDeleted) { %> | <span class="badge badge-deleted">Deleted</span><% } %>
+      <% if (thread.isLocked) { %> | <span class="badge badge-locked">Locked</span><% } %>
+      <% } %>
     </p>
     <hr style="margin:0.75rem 0;border-color:var(--color-border)">
     <div style="white-space:pre-wrap;font-size:0.9rem"><%= thread.body %></div>
   </div>
 
-  <form method="POST" action="/admin/threads/<%= thread.id %>/edit">
+  <form method="POST" action="<%= url('/admin/threads/' + (thread.id) + '/edit') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <div class="form-group">
@@ -52,13 +56,19 @@
 
     <div class="form-group">
       <label>
-        <input type="checkbox" name="isHidden" value="1" <%= thread.isHidden ? 'checked' : '' %>> Hidden
+        <input type="checkbox" name="isHidden" value="1" <%= thread.isHidden ? 'checked' : '' %>> Hidden (staff can still see this thread)
       </label>
     </div>
 
     <div class="form-group">
       <label>
-        <input type="checkbox" name="isDeleted" value="1" <%= thread.isDeleted ? 'checked' : '' %>> Deleted
+        <input type="checkbox" name="isDeleted" value="1" <%= thread.isDeleted ? 'checked' : '' %>> Deleted (soft-delete; removes from public lists)
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="isLocked" value="1" <%= thread.isLocked ? 'checked' : '' %>> Locked (only moderators can reply or edit comments)
       </label>
     </div>
 
@@ -68,12 +78,14 @@
       </label>
     </div>
 
+    <%- include('../partials/reply-approval-trust-select') %>
+
     <% if (thread.embedEnabled) { %>
     <div class="form-group">
       <label>Embed snippet</label>
-      <textarea readonly rows="3" style="width:100%;font-family:monospace;font-size:0.8rem" onclick="this.select()">&lt;iframe src=&quot;<%= embedUrl %>&quot; width=&quot;100%&quot; height=&quot;480&quot; style=&quot;border:0&quot; title=&quot;Comments&quot;&gt;&lt;/iframe&gt;</textarea>
+      <textarea readonly rows="4" style="width:100%;font-family:monospace;font-size:0.8rem" onclick="this.select()"><%= embedSnippet %></textarea>
       <p style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem">
-        <a href="/embed/threads/<%= thread.id %>" target="_blank" rel="noopener">Preview embed</a>
+        <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
       </p>
     </div>
     <% } %>
@@ -84,7 +96,7 @@
     </div>
 
     <button type="submit" class="btn">Save Changes</button>
-    <a href="/admin" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/admin') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

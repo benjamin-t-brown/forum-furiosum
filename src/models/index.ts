@@ -32,12 +32,14 @@ export interface Thread {
   approvalStatus: 'new' | 'approved' | 'unapproved' | 'unknown';
   isHidden: 0 | 1;
   isDeleted: 0 | 1;
+  isLocked: 0 | 1;
   createdAt: string;
   updatedAt: string;
   lastEditedAt: string | null;
   lastEditedByUserId: string | null;
   lastEditedReason: string | null;
   embedEnabled: 0 | 1;
+  replyApprovalTrust: ReplyApprovalTrust | null;
 }
 
 export interface Post {
@@ -93,5 +95,6 @@ export interface PaginatedResult<T> {
 // Extended types for UI/API responses
 export type UserRole = 'admin' | 'moderator' | 'user';
 export type UserTrust = 'new' | 'unknown' | 'trusted' | 'verified' | 'banned';
+export type ReplyApprovalTrust = 'new' | 'unknown' | 'trusted' | 'verified';
 export type ApprovalStatus = 'new' | 'approved' | 'unapproved' | 'unknown';
 export type TargetType = 'user' | 'thread' | 'post';

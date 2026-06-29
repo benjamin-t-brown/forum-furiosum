@@ -1,0 +1,68 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="forum-home">
+  <p class="breadcrumb"><a href="<%= url('/') %>">Home</a> &rsaquo; <%= category.name %></p>
+
+  <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+    <form method="GET" action="<%= url('/categories/' + (category.slug) + '') %>" class="staff-thread-filters">
+      <% if (page > 1) { %><input type="hidden" name="page" value="<%= page %>"><% } %>
+      <label class="staff-filter-label">
+        <input type="checkbox" name="showDeleted" value="1" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
+        Show deleted
+      </label>
+    </form>
+  <% } %>
+
+  <div class="category-block">
+    <div class="category-header">
+      <h1 class="category-name"><%= category.name %></h1>
+      <% if (category.description) { %><p class="category-desc"><%= category.description %></p><% } %>
+      <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+        <% if (category.isHidden) { %><span class="badge badge-hidden">Hidden</span><% } %>
+      <% } %>
+    </div>
+    <% if (user) { %>
+      <div class="category-actions">
+        <a href="<%= url('/threads/new?categoryId=' + (category.id) + '') %>" class="btn btn-sm">+ New Thread</a>
+      </div>
+    <% } %>
+    <table class="thread-table">
+      <thead>
+        <tr>
+          <th class="th-title">Thread</th>
+          <th class="th-author">Author</th>
+          <th class="th-replies">Replies</th>
+          <th class="th-activity">Last Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (threads.data.length === 0) { %>
+          <tr><td colspan="4" class="empty-row">No threads yet.<% if (user) { %> <a href="<%= url('/threads/new?categoryId=' + (category.id) + '') %>">Start one!</a><% } %></td></tr>
+        <% } else { %>
+          <% threads.data.forEach(function(thread) { %>
+            <tr>
+              <td class="td-title">
+                <a href="<%= url('/threads/' + (thread.id) + '') %>"><%= thread.title %></a>
+                <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+                  <%- include('../partials/status-badge', { item: thread }) %>
+                <% } %>
+              </td>
+              <td class="td-author"><%- include('../partials/author-link', { authorUsername: thread.authorUsername, authorUserId: thread.authorUserId, authorIsDeleted: thread.authorIsDeleted, authorTrust: thread.authorTrust }) %></td>
+              <td class="td-replies"><%= thread.postCount %></td>
+              <td class="td-activity"><%= formatDate(thread.updatedAt) %></td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+    <% if (threads.totalPages > 1) { %>
+      <div class="pagination">
+        <% if (page > 1) { %><a href="<%= categoryPageHref(page - 1) %>" class="btn btn-sm">&larr; Prev</a><% } %>
+        <span>Page <%= page %> of <%= threads.totalPages %></span>
+        <% if (page < threads.totalPages) { %><a href="<%= categoryPageHref(page + 1) %>" class="btn btn-sm">Next &rarr;</a><% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/layout-bottom') %>

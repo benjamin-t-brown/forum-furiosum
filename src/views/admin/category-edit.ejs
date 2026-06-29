@@ -4,7 +4,7 @@
   <h1><%= category ? 'Edit Category' : 'New Category' %></h1>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
 
-  <form method="POST" action="/admin/categories/<%= category ? category.id + '/edit' : 'new' %>">
+  <form method="POST" action="<%= url('/admin/categories/' + (category ? category.id + '/edit' : 'new') + '') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <div class="form-group">
@@ -31,7 +31,7 @@
     </div>
 
     <button type="submit" class="btn"><%= category ? 'Save Changes' : 'Create Category' %></button>
-    <a href="/admin/categories" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/admin/categories') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

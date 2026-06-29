@@ -3,7 +3,7 @@
 <div class="admin-page" style="max-width:800px">
   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1rem">
     <h1>Manage Categories</h1>
-    <a href="/admin/categories/new" class="btn">+ New Category</a>
+    <a href="<%= url('/admin/categories/new') %>" class="btn">+ New Category</a>
   </div>
 
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
@@ -36,9 +36,9 @@
           <% } %>
         </td>
         <td style="text-align:center;white-space:nowrap">
-          <a href="/admin/categories/<%= cat.id %>/edit" class="btn btn-secondary" style="font-size:0.8rem;padding:0.2rem 0.6rem">Edit</a>
+          <a href="<%= url('/admin/categories/' + (cat.id) + '/edit') %>" class="btn btn-secondary" style="font-size:0.8rem;padding:0.2rem 0.6rem">Edit</a>
           <% if (cat.id !== '00000000-0000-0000-0000-000000000001') { %>
-          <form method="POST" action="/admin/categories/<%= cat.id %>/delete" style="display:inline"
+          <form method="POST" action="<%= url('/admin/categories/' + (cat.id) + '/delete') %>" style="display:inline"
             onsubmit="return confirm('Delete &quot;<%= cat.name %>&quot;? All threads will be moved to General Discussion.')">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="btn" style="font-size:0.8rem;padding:0.2rem 0.6rem;background:var(--color-accent);border-color:var(--color-accent)">Delete</button>
@@ -53,7 +53,7 @@
   </table>
 
   <div style="margin-top:1rem">
-    <a href="/admin" class="btn btn-secondary">← Back to Dashboard</a>
+    <a href="<%= url('/admin') %>" class="btn btn-secondary">← Back to Dashboard</a>
   </div>
 </div>
 

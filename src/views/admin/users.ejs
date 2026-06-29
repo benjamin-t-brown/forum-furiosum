@@ -1,0 +1,55 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="admin-page">
+  <h1>Find Users</h1>
+
+  <div class="admin-nav">
+    <a href="<%= url('/admin') %>" class="btn btn-sm btn-secondary">&#8592; Dashboard</a>
+  </div>
+
+  <form method="GET" action="<%= url('/admin/users') %>" class="admin-user-search">
+    <div class="form-group">
+      <label for="q">Search by username or email</label>
+      <div class="admin-user-search-row">
+        <input type="search" id="q" name="q" value="<%= query %>" placeholder="Username or email" autocomplete="off" autofocus>
+        <button type="submit" class="btn">Search</button>
+      </div>
+    </div>
+  </form>
+
+  <% if (query) { %>
+    <% if (users.length === 0) { %>
+      <p class="empty-state">No users found for &ldquo;<%= query %>&rdquo;.</p>
+    <% } else { %>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(function(u) { %>
+            <tr>
+              <td>
+                <a href="<%= url('/users/' + (u.id) + '') %>"><%= u.username %></a>
+                <% if (u.isDeleted) { %> <span class="badge badge-deleted">Deleted</span><% } %>
+              </td>
+              <td><%= u.email %></td>
+              <td><span class="badge badge-<%= u.role %>"><%= u.role %></span></td>
+              <td><span class="badge badge-status"><%= u.trust %></span></td>
+              <td><%= formatDate(u.createdAt) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  <% } else { %>
+    <p class="empty-state">Enter a username or email to search.</p>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-bottom') %>

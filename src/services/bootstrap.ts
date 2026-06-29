@@ -37,5 +37,8 @@ export async function bootstrapAdmin(db: Database.Database): Promise<void> {
   if (!existing) {
     await createUser(db, username, email, password, 'admin');
     logger.info({ email, username }, 'Admin account bootstrapped');
+  } else if (existing.role === 'admin' && (existing.trust === 'new' || existing.trust === 'trusted')) {
+    db.prepare("UPDATE users SET trust = 'verified' WHERE id = ?").run(existing.id);
+    logger.info({ email, username: existing.username }, 'Bootstrap admin trust upgraded to verified');
   }
 }

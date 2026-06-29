@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { getDb } from '../../db/db';
 import { getPostById, updatePost, deletePost } from '../../services/posts';
+import { getThreadById } from '../../services/threads';
 import { requireAuth } from '../../middleware/requireAuth';
 import { requireRole } from '../../middleware/requireRole';
 import { writeAuditLog, approvePost, hidePost } from '../../services/moderation';
 import { ok, fail } from './helpers';
+import { getPostBodyValidationError } from '../../utils/postBodyLimits';
+import { canEditPostOnThread } from '../../utils/threadLock';
 
 export const postsRouter = Router();
 
@@ -15,13 +18,18 @@ postsRouter.patch('/:id', requireAuth, (req, res) => {
   if (!post) {return void fail(res, 404, 'NOT_FOUND', 'Post not found');}
 
   const user = req.user!;
-  const isOwner = post.authorUserId === user.id;
-  const isMod = user.role === 'admin' || user.role === 'moderator';
+  const thread = getThreadById(db, post.threadId, 'admin');
+  if (!thread) {return void fail(res, 404, 'NOT_FOUND', 'Thread not found');}
 
-  if (!isOwner && !isMod) {return void fail(res, 403, 'FORBIDDEN', 'Cannot edit this post');}
+  if (!canEditPostOnThread(!!thread.isLocked, user, post.authorUserId, user.id)) {
+    return void fail(res, 403, 'FORBIDDEN', 'Cannot edit this post');
+  }
 
   const { body, reason } = req.body;
-  if (body !== undefined && (body.length < 1 || body.length > 10000)) {return void fail(res, 400, 'VALIDATION_ERROR', 'body must be 1-10000 characters');}
+  if (body !== undefined) {
+    const bodyError = getPostBodyValidationError(body);
+    if (bodyError) {return void fail(res, 400, 'VALIDATION_ERROR', bodyError);}
+  }
 
   const updated = updatePost(db, (req.params.id as string), { body, lastEditedByUserId: user.id, lastEditedReason: reason });
   ok(res, updated);

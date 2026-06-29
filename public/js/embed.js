@@ -1,7 +1,36 @@
 (function () {
   'use strict';
 
+  function initEmbedAutoResize() {
+    var shell = document.querySelector('.embed-shell');
+    if (!shell || window.parent === window) {return;}
+
+    var threadRoot = shell.querySelector('.embed-thread');
+    var threadId = threadRoot ? threadRoot.dataset.threadId : null;
+    var resizeTimer;
+
+    function reportHeight() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        window.parent.postMessage({
+          type: 'embed:resize',
+          height: shell.offsetHeight,
+          threadId: threadId,
+        }, '*');
+      }, 50);
+    }
+
+    reportHeight();
+    window.addEventListener('resize', reportHeight);
+    window.addEventListener('load', reportHeight);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(reportHeight).observe(shell);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    initEmbedAutoResize();
+
     var root = document.querySelector('.embed-thread');
     if (!root) { return; }
 
@@ -23,10 +52,12 @@
       });
     }
 
+    var basePath = document.body.getAttribute('data-base-path') || '';
+
     function openAuthPopup(path) {
       if (textarea) { localStorage.setItem(draftKey, textarea.value); }
       var next = encodeURIComponent(authReturnUrl);
-      window.open(path + '?next=' + next, 'forum_auth', 'width=480,height=640');
+      window.open(basePath + path + '?next=' + next, 'forum_auth', 'width=480,height=640');
     }
 
     var loginBtn = document.getElementById('embed-login-btn');

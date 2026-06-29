@@ -1,0 +1,19 @@
+# Reverse proxy (nginx) — subpath deployment example
+#
+# Serve the forum at https://example.com/forum-furiosum when the Node app listens on 127.0.0.1:9827.
+# Set BASE_PATH=/forum-furiosum in the forum .env (no trailing slash).
+# Set FORUM_BASE_URL=https://example.com/forum-furiosum for scripts/notify.ts.
+
+location /forum-furiosum/ {
+    proxy_pass http://127.0.0.1:9827/;   # trailing slash strips the location prefix
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# Optional: redirect without trailing slash
+location = /forum-furiosum {
+    return 301 /forum-furiosum/;
+}

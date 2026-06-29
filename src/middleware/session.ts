@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { getDb } from '../db/db';
 import { getSession, SESSION_COOKIE_NAME, SESSION_MAX_AGE_MS } from '../services/session';
 import { getUserById } from '../services/auth';
+import { getCookiePath } from '../utils/basePath';
 
 
 function parseCookies(cookieHeader: string): Record<string, string> {
@@ -27,13 +28,13 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
 
   if (!session) {
     // Clear invalid cookie
-    res.clearCookie(SESSION_COOKIE_NAME);
+    res.clearCookie(SESSION_COOKIE_NAME, { path: getCookiePath() });
     return next();
   }
 
   const user = getUserById(db, session.userId);
   if (!user) {
-    res.clearCookie(SESSION_COOKIE_NAME);
+    res.clearCookie(SESSION_COOKIE_NAME, { path: getCookiePath() });
     return next();
   }
 
@@ -48,5 +49,10 @@ export function setSessionCookie(res: Response, sessionId: string): void {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     maxAge: SESSION_MAX_AGE_MS,
+    path: getCookiePath(),
   });
+}
+
+export function clearSessionCookie(res: Response): void {
+  res.clearCookie(SESSION_COOKIE_NAME, { path: getCookiePath() });
 }

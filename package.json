@@ -19,10 +19,14 @@
     "prod": "tsc && node dist/index.js",
     "test": "vitest",
     "migrate": "tsx scripts/migrate.ts",
-    "seed": "tsx scripts/seed-dev.ts",
+    "seed": "tsx scripts/seed-dev.ts --force",
+    "notify": "tsx scripts/notify.ts",
+    "notify:prod": "node dist/notify.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "deps:check-scripts": "npm approve-scripts --allow-scripts-pending"
+    "deps:check-scripts": "npm approve-scripts --allow-scripts-pending",
+    "deps:check-no-git": "tsx scripts/check-no-git-deps.ts",
+    "deps:check": "npm run deps:check-scripts && npm run deps:check-no-git"
   },
   "dependencies": {
     "argon2": "0.41.1",

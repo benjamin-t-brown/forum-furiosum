@@ -33,16 +33,19 @@ describe('Settings service', () => {
     expect(settings.forumName).toBe('Forum Furiosum');
     expect(Array.isArray(settings.topBarLinks)).toBe(true);
     expect(Array.isArray(settings.featuredCategories)).toBe(true);
-    expect(settings.themeColorPrimary).toBe('#8eb1c7');
+    expect(settings.themeColorPrimary).toBe('#a8cbe1');
+    expect(settings.themeColorSurface).toBe('#ebeae6');
   });
 
   it('updateForumSettings persists changes', () => {
     updateForumSettings(db, {
       forumName: 'Updated Forum',
+      homeIntro: 'Welcome to our forum. Be kind.',
       topBarLinks: [{ label: 'Blog', url: 'https://example.com' }],
     });
     const settings = getForumSettings(db);
     expect(settings.forumName).toBe('Updated Forum');
+    expect(settings.homeIntro).toBe('Welcome to our forum. Be kind.');
     expect(settings.topBarLinks[0].label).toBe('Blog');
   });
 });

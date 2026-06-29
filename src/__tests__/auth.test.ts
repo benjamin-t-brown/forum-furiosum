@@ -37,9 +37,20 @@ describe('Auth service', () => {
       expect(user.email).toBe('test@example.com');
     });
 
-    it('creates admin user with correct role', async () => {
+    it('creates admin user with correct role and verified status', async () => {
       const user = await createUser(db, 'adminuser', 'admin@example.com', 'password123', 'admin');
       expect(user.role).toBe('admin');
+      expect(user.trust).toBe('verified');
+    });
+
+    it('creates moderators with trusted status', async () => {
+      const user = await createUser(db, 'moduser', 'mod@example.com', 'password123', 'moderator');
+      expect(user.trust).toBe('trusted');
+    });
+
+    it('creates regular users with new status', async () => {
+      const user = await createUser(db, 'newbie', 'newbie@example.com', 'password123');
+      expect(user.trust).toBe('new');
     });
   });
 

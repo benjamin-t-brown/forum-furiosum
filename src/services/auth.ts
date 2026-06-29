@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 import Database from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
-import type { User } from '../models';
+import type { User, UserTrust } from '../models';
 
 export async function hashPassword(password: string): Promise<string> {
   return argon2.hash(password, { type: argon2.argon2id });
@@ -16,16 +16,20 @@ export async function createUser(
   username: string,
   email: string,
   password: string,
-  role: 'admin' | 'moderator' | 'user' = 'user'
+  role: 'admin' | 'moderator' | 'user' = 'user',
+  trust?: UserTrust
 ): Promise<User> {
   const id = uuidv4();
   const passwordHash = await hashPassword(password);
   const normalizedEmail = email.toLowerCase().trim();
+  const resolvedTrust = trust ?? (
+    role === 'admin' ? 'verified' : role === 'moderator' ? 'trusted' : 'new'
+  );
 
   db.prepare(`
-    INSERT INTO users (id, username, email, passwordHash, role)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(id, username, normalizedEmail, passwordHash, role);
+    INSERT INTO users (id, username, email, passwordHash, role, trust)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(id, username, normalizedEmail, passwordHash, role, resolvedTrust);
 
   return db.prepare('SELECT * FROM users WHERE id = ?').get(id) as User;
 }

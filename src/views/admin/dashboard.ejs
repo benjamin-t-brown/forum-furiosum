@@ -12,11 +12,18 @@
       <div class="stat-num"><%= pending.posts %></div>
       <div class="stat-label">Pending Posts</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= pending.usernameChanges %></div>
+      <div class="stat-label">Username Changes</div>
+    </div>
   </div>
 
+  <% if (typeof error !== 'undefined' && error) { %><div class="error-msg"><%= error %></div><% } %>
+
   <div class="admin-nav">
-    <a href="/admin/settings" class="btn btn-sm">&#9881; Settings</a>
-    <a href="/admin/categories" class="btn btn-sm">&#9783; Categories</a>
+    <a href="<%= url('/admin/users') %>" class="btn btn-sm">&#128269; Find Users</a>
+    <a href="<%= url('/admin/settings') %>" class="btn btn-sm">&#9881; Settings</a>
+    <a href="<%= url('/admin/categories') %>" class="btn btn-sm">&#9783; Categories</a>
   </div>
 
   <% if (pendingThreads.length > 0) { %>
@@ -34,11 +41,11 @@
       <tbody>
         <% pendingThreads.forEach(function(t) { %>
           <tr>
-            <td><a href="/threads/<%= t.id %>"><%= t.title %></a></td>
-            <td><a href="/users/<%= t.authorUserId %>"><%= t.authorUsername %></a></td>
+            <td><a href="<%= url('/threads/' + (t.id) + '') %>"><%= t.title %></a></td>
+            <td><%- include('../partials/author-link', { authorUsername: t.authorUsername, authorUserId: t.authorUserId, authorIsDeleted: t.authorIsDeleted, authorTrust: t.authorTrust }) %></td>
             <td><%= t.categoryName %></td>
             <td><%= formatDate(t.createdAt) %></td>
-            <td><a href="/admin/threads/<%= t.id %>/edit" class="btn btn-sm">Review</a></td>
+            <td><a href="<%= url('/admin/threads/' + (t.id) + '/edit') %>" class="btn btn-sm">Review</a></td>
           </tr>
         <% }); %>
       </tbody>
@@ -59,10 +66,46 @@
       <tbody>
         <% pendingPosts.forEach(function(p) { %>
           <tr>
-            <td><a href="/threads/<%= p.threadId %>"><%= p.threadTitle %></a></td>
-            <td><a href="/users/<%= p.authorUserId %>"><%= p.authorUsername %></a></td>
+            <td><a href="<%= url('/threads/' + (p.threadId) + '') %>"><%= p.threadTitle %></a></td>
+            <td><%- include('../partials/author-link', { authorUsername: p.authorUsername, authorUserId: p.authorUserId, authorIsDeleted: p.authorIsDeleted, authorTrust: p.authorTrust }) %></td>
             <td><%= formatDate(p.createdAt) %></td>
-            <td><a href="/admin/posts/<%= p.id %>/edit" class="btn btn-sm">Review</a></td>
+            <td><a href="<%= url('/admin/posts/' + (p.id) + '/edit') %>" class="btn btn-sm">Review</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <% if (pendingUsernameChanges.length > 0) { %>
+    <h2 style="margin-top:1.5rem">Pending Username Changes</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Current</th>
+          <th>Requested</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pendingUsernameChanges.forEach(function(r) { %>
+          <tr>
+            <td><a href="<%= url('/admin/users/' + (r.userId) + '/profile') %>"><%= r.currentUsername %></a></td>
+            <td><%= r.currentUsername %></td>
+            <td><strong><%= r.requestedUsername %></strong></td>
+            <td><%= formatDate(r.createdAt) %></td>
+            <td style="display:flex;gap:0.35rem;flex-wrap:wrap">
+              <a href="<%= url('/admin/users/' + (r.userId) + '/profile') %>" class="btn btn-sm btn-secondary">Edit</a>
+              <form method="POST" action="<%= url('/admin/username-requests/' + (r.id) + '/approve') %>" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm">Approve</button>
+              </form>
+              <form method="POST" action="<%= url('/admin/username-requests/' + (r.id) + '/reject') %>" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-secondary">Reject</button>
+              </form>
+            </td>
           </tr>
         <% }); %>
       </tbody>

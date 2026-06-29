@@ -19,7 +19,7 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 ### Prerequisites
 
 - Node.js 20+
-- npm 11.17+ (pinned via Corepack — see [Adding and updating dependencies](ADD__UPDATE_DEPS.md))
+- npm 11.17+ (pinned via Corepack — see [Adding and updating dependencies](ADD_UPDATE_DEPS.md))
 
 ### Setup
 
@@ -28,7 +28,7 @@ A simple, old-school web forum. Built with Node.js + TypeScript + Express + EJS 
 npm install
 ```
 
-For dependency policy, version pinning, and install-script allowlists, see [ADD__UPDATE_DEPS.md](ADD__UPDATE_DEPS.md).
+For dependency policy, version pinning, and install-script allowlists, see [ADD_UPDATE_DEPS.md](ADD_UPDATE_DEPS.md).
 
 ```bash
 # Copy env file and edit it
@@ -75,45 +75,11 @@ This compiles TypeScript with `tsc` then runs `node dist/index.js`.
 
 ---
 
-## Docker Deployment
+## Deployment
 
-### Build
+Docker build, push to AWS ECR, server setup, env vars, and nginx subpath config: **[DEPLOYMENT.md](DEPLOYMENT.md)**.
 
-```bash
-docker build -t forum-furiosum .
-```
-
-### Run
-
-```bash
-docker run -d \
-  --name forum-furiosum \
-  -p 9827:9827 \
-  -v /home/admin/forum-furiosum:/data \
-  -e NODE_ENV=production \
-  -e PORT=9827 \
-  -e DB_PATH=/data/db.sqlite \
-  -e SESSION_SECRET=your-long-random-secret \
-  -e ADMIN_BOOTSTRAP_EMAIL=admin@yourdomain.com \
-  -e ADMIN_BOOTSTRAP_PASSWORD=your-strong-password \
-  -e ADMIN_BOOTSTRAP_USERNAME=admin \
-  forum-furiosum
-```
-
-The database is stored at `DB_PATH` inside the container — mount a host directory to persist it.
-
-### Environment Variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `NODE_ENV` | No | `development` | `production` or `development` |
-| `PORT` | No | `9827` | HTTP port |
-| `DB_PATH` | Yes | `./forum.sqlite` | Path to SQLite DB file |
-| `SESSION_SECRET` | Yes | — | Long random string for session signing |
-| `ADMIN_BOOTSTRAP_EMAIL` | Prod only | `admin@admin.com` (dev) | Admin account email for first run |
-| `ADMIN_BOOTSTRAP_PASSWORD` | Prod only | `test12345` (dev) | Admin account password for first run |
-| `ADMIN_BOOTSTRAP_USERNAME` | No | `admin` | Admin account username for first run |
-| `EMBED_FRAME_ANCESTORS` | No | `*` | CSP `frame-ancestors` for embed routes; restrict to your blog origin(s) in production |
+Discord notify cron (uses the same container): **[NOTIFICATIONS.md](NOTIFICATIONS.md)**.
 
 ---
 
@@ -130,7 +96,7 @@ A thread can be embedded at the bottom of external pages (blog posts, announceme
 Example:
 
 ```html
-<iframe src="https://your-forum.example.com/embed/threads/THREAD_ID" width="100%" height="480" style="border:0" title="Comments"></iframe>
+<iframe src="https://your-forum.example.com/embed/threads/THREAD_ID" width="100%" height="480" style="border:16" title="Comments"></iframe>
 ```
 
 Preview the embed at `/embed/threads/THREAD_ID`.
@@ -152,18 +118,6 @@ EMBED_FRAME_ANCESTORS=https://blog.example.com https://www.example.com
 
 ---
 
-## Database Backup
-
-The forum uses SQLite. To manually back up the database from a VPS:
-
-```bash
-bash scripts/backup.sh admin@your-vps.example.com /home/admin/forum-furiosum/db.sqlite
-```
-
-This prints the `scp` command to run. For a live-safe backup while the server is running, use the `sqlite3 .backup` command shown by the script.
-
----
-
 ## API
 
 The REST API is available at `/api/v1`. See [`docs/openapi.yaml`](docs/openapi.yaml) for the full spec.
@@ -174,24 +128,5 @@ Key endpoints:
 - `GET /api/v1/threads` — list threads (paginated)
 - `POST /api/v1/auth/login` — login
 - `POST /api/v1/auth/register` — register
-
----
-
-## Routes
-
-| Path | Description |
-|---|---|
-| `/` | Home — category list with recent threads |
-| `/threads/:id` | Thread view with posts |
-| `/embed/threads/:id` | Embeddable comment thread (iframe) |
-| `/threads/new` | Create thread |
-| `/threads/:id/edit` | Edit thread |
-| `/register` | Register |
-| `/login` | Login |
-| `/users/:id` | User profile |
-| `/users/:id/edit` | Edit profile |
-| `/admin` | Admin dashboard |
-| `/admin/threads/:id/edit` | Moderate thread |
-| `/admin/posts/:id/edit` | Moderate post |
-| `/admin/users/:id/edit` | Edit user role/trust |
-| `/admin/settings` | Forum settings |
+- `GET /api/v1/internal/pending` — pending moderation queue (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](NOTIFICATIONS.md))
+- `GET /api/v1/internal/events` — forum activity events in a date range (requires `MODERATION_POLL_SECRET`; see [NOTIFICATIONS.md](NOTIFICATIONS.md))

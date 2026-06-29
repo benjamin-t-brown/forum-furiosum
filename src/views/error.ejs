@@ -3,7 +3,7 @@
 <div class="error-page">
   <h1><%= statusCode %> &mdash; <%= title %></h1>
   <p><%= message %></p>
-  <a href="/" class="btn">&larr; Back to Home</a>
+  <a href="<%= url('/') %>" class="btn">&larr; Back to Home</a>
 </div>
 
 <%- include('partials/layout-bottom') %>

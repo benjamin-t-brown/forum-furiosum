@@ -5,6 +5,7 @@ import { postsRouter } from './posts';
 import { usersRouter } from './users';
 import { authRouter } from './auth';
 import { adminRouter } from './admin';
+import { internalRouter } from './internal';
 import { apiRateLimiter } from '../../middleware/rateLimiter';
 
 export const apiRouter = Router();
@@ -17,6 +18,7 @@ apiRouter.use('/posts', postsRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/admin', adminRouter);
+apiRouter.use('/internal', internalRouter);
 
 // 404 for unmatched API routes
 apiRouter.use((_req, res) => {

@@ -3,20 +3,26 @@
 <div class="thread-view">
   <div class="thread-header">
     <h1 class="thread-title"><%= thread.title %></h1>
+    <% if (thread.isLocked) { %>
+      <p class="notice-msg">This thread is locked. New replies are disabled.</p>
+    <% } %>
     <div class="thread-meta">
-      Posted by <a href="/users/<%= thread.authorUserId %>"><%= thread.authorUsername %></a>
+      Posted by <%- include('../partials/author-link', { authorUsername: thread.authorUsername, authorUserId: thread.authorUserId, authorIsDeleted: thread.authorIsDeleted, authorTrust: thread.authorTrust }) %>
       in <strong><%= thread.categoryName %></strong>
       on <%= formatDate(thread.createdAt) %>
       <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
         <%- include('../partials/status-badge', { item: thread }) %>
+      <% } else if (thread.isLocked) { %>
+        <span class="badge badge-locked">Locked</span>
       <% } %>
     </div>
     <div class="thread-body">
       <%- thread.bodyHtml %>
     </div>
-    <% if (canEdit) { %>
+    <% const threadEditLabel = editButtonLabel(user, thread.authorUserId); %>
+    <% if (threadEditLabel) { %>
       <div class="thread-actions">
-        <a href="/threads/<%= thread.id %>/edit" class="btn btn-sm">Edit</a>
+        <a href="<%= url('/threads/' + (thread.id) + '/edit') %>" class="btn btn-sm"><%= threadEditLabel %></a>
       </div>
     <% } %>
   </div>
@@ -28,18 +34,26 @@
       <div class="post" id="post-<%= post.id %>">
         <div class="post-author">
           <%- include('../partials/avatar', { username: post.authorUsername }) %>
-          <a href="/users/<%= post.authorUserId %>"><%= post.authorUsername %></a>
+          <%- include('../partials/author-link', { authorUsername: post.authorUsername, authorUserId: post.authorUserId, authorIsDeleted: post.authorIsDeleted, authorTrust: post.authorTrust }) %>
           <small><%= formatDate(post.createdAt) %></small>
-          <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
+          <% if (user && (user.role === 'admin' || user.role === 'moderator' || (user.id === post.authorUserId && post.approvalStatus !== 'approved'))) { %>
             <%- include('../partials/status-badge', { item: post }) %>
           <% } %>
         </div>
         <div class="post-body">
           <%- post.bodyHtml %>
+          <%- include('../partials/edit-note', {
+            createdAt: post.createdAt,
+            lastEditedAt: post.lastEditedAt,
+            editorUsername: post.editorUsername,
+            lastEditedByUserId: post.lastEditedByUserId,
+            editorIsDeleted: post.editorIsDeleted,
+          }) %>
         </div>
-        <% if (user && (user.id === post.authorUserId || user.role === 'admin' || user.role === 'moderator')) { %>
+        <% const postEditLabel = editButtonLabel(user, post.authorUserId, { threadLocked: !!thread.isLocked }); %>
+        <% if (postEditLabel) { %>
           <div class="post-actions">
-            <a href="/posts/<%= post.id %>/edit" class="btn btn-sm">Edit</a>
+            <a href="<%= url('/posts/' + (post.id) + '/edit') %>" class="btn btn-sm"><%= postEditLabel %></a>
           </div>
         <% } %>
       </div>
@@ -54,19 +68,56 @@
     <% } %>
   </div>
 
-  <% if (user) { %>
+  <% if (user && canPostToThread(!!thread.isLocked, user)) { %>
     <div class="reply-form">
       <h3>Post a Reply</h3>
       <% if (typeof error !== 'undefined' && error) { %><div class="error-msg"><%= error %></div><% } %>
-      <form method="POST" action="/threads/<%= thread.id %>/posts/new">
+      <form method="POST" action="<%= url('/threads/' + (thread.id) + '/posts/new') %>">
         <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-        <textarea name="body" rows="6" placeholder="Write your reply..." maxlength="10000" required></textarea>
+        <textarea name="body" rows="6" placeholder="Write your reply..." maxlength="<%= maxPostBodyLength %>" required></textarea>
         <button type="submit" class="btn">Post Reply</button>
       </form>
     </div>
-  <% } else { %>
-    <p class="login-prompt"><a href="/login">Log in</a> to reply.</p>
+  <% } else if (user && thread.isLocked) { %>
+    <p class="login-prompt">This thread is locked. Only moderators can post replies.</p>
+  <% } else if (!user) { %>
+    <p class="login-prompt"><a href="<%= url('/login') %>">Log in</a> to reply.</p>
+  <% } %>
+
+  <% if (typeof notice !== 'undefined' && notice) { %>
+    <div id="thread-post-notice" class="<%= notice.kind === 'success' ? 'success-msg' : 'notice-msg' %> thread-post-notice"><%= notice.message %></div>
+  <% } %>
+
+  <% if (typeof embedUrl !== 'undefined' && embedUrl) { %>
+    <div class="embed-snippet">
+      <h2 class="embed-snippet-title">Embed this thread</h2>
+      <p class="embed-snippet-desc">Paste this code on an external page to show the comment thread:</p>
+      <label class="embed-snippet-label" for="embed-snippet-code">Iframe embed code</label>
+      <textarea id="embed-snippet-code" class="embed-snippet-code" readonly rows="3" onclick="this.select()"><%= embedSnippet %></textarea>
+      <p class="embed-snippet-link">
+        Direct link: <a href="<%= embedUrl %>" target="_blank" rel="noopener"><%= embedUrl %></a>
+        &middot; <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
+      </p>
+    </div>
   <% } %>
 </div>
+
+<% if (typeof notice !== 'undefined' && notice) { %>
+<script>
+(function () {
+  function scrollToNotice() {
+    var el = document.getElementById('thread-post-notice');
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'end' }); }
+  }
+  if (location.hash === '#thread-post-notice') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { requestAnimationFrame(scrollToNotice); });
+    } else {
+      requestAnimationFrame(scrollToNotice);
+    }
+  }
+})();
+</script>
+<% } %>
 
 <%- include('../partials/layout-bottom') %>

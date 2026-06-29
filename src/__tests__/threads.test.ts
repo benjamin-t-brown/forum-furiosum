@@ -15,13 +15,35 @@ describe('Thread service', () => {
   });
 
   describe('createThread', () => {
-    it('creates a thread with new approvalStatus', () => {
+    it('creates a thread with new approvalStatus by default', () => {
       const thread = createThread(db, { categoryId, authorUserId: userId, title: 'Test Thread', body: 'Hello world' });
       expect(thread.id).toBeTruthy();
       expect(thread.title).toBe('Test Thread');
       expect(thread.approvalStatus).toBe('new');
       expect(thread.isHidden).toBe(0);
       expect(thread.isDeleted).toBe(0);
+    });
+
+    it('creates a thread with explicit approvalStatus', () => {
+      const thread = createThread(db, {
+        categoryId,
+        authorUserId: userId,
+        title: 'Trusted Thread',
+        body: 'Hello world',
+        approvalStatus: 'approved',
+      });
+      expect(thread.approvalStatus).toBe('approved');
+    });
+
+    it('creates a thread with replyApprovalTrust when set', () => {
+      const thread = createThread(db, {
+        categoryId,
+        authorUserId: userId,
+        title: 'Threshold thread',
+        body: 'Hello world',
+        replyApprovalTrust: 'verified',
+      });
+      expect(thread.replyApprovalTrust).toBe('verified');
     });
   });
 
@@ -42,6 +64,22 @@ describe('Thread service', () => {
     it('shows all threads to moderators', () => {
       const result = listThreads(db, { role: 'moderator' });
       expect(result.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('hides deleted threads from moderators', () => {
+      const pending = createThread(db, { categoryId, authorUserId: userId, title: 'Deleted Pending', body: 'body' });
+      deleteThread(db, pending.id);
+
+      const result = listThreads(db, { role: 'moderator' });
+      expect(result.data.some(t => t.id === pending.id)).toBe(false);
+    });
+
+    it('shows deleted threads to moderators when includeDeleted is set', () => {
+      const pending = createThread(db, { categoryId, authorUserId: userId, title: 'Deleted Pending', body: 'body' });
+      deleteThread(db, pending.id);
+
+      const result = listThreads(db, { role: 'moderator', includeDeleted: true });
+      expect(result.data.some(t => t.id === pending.id)).toBe(true);
     });
 
     it('paginates results', () => {
@@ -65,6 +103,20 @@ describe('Thread service', () => {
       const updated = getThreadById(db, thread.id, 'admin');
       expect(updated!.title).toBe('New Title');
       expect(updated!.lastEditedByUserId).toBe(userId);
+    });
+
+    it('updates replyApprovalTrust', () => {
+      const thread = createThread(db, { categoryId, authorUserId: userId, title: 'Thread', body: 'body' });
+      updateThread(db, thread.id, { replyApprovalTrust: 'new' });
+      expect(getThreadById(db, thread.id, 'admin')!.replyApprovalTrust).toBe('new');
+    });
+
+    it('updates hidden and deleted flags', () => {
+      const thread = createThread(db, { categoryId, authorUserId: userId, title: 'Thread', body: 'body' });
+      updateThread(db, thread.id, { isHidden: 1, isDeleted: 1 });
+      const updated = getThreadById(db, thread.id, 'admin')!;
+      expect(updated.isHidden).toBe(1);
+      expect(updated.isDeleted).toBe(1);
     });
   });
 

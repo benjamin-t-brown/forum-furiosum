@@ -10,3 +10,9 @@ dist
 .env
 .env.*
 !.env.example
+.moderation-notify-state.json
+.forum-notify-state.json
+
+# Local notify wrappers (set secrets here, not in git)
+scripts/notify.local.sh
+scripts/notify.local.ps1

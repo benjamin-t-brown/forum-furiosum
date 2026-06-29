@@ -11,10 +11,8 @@ export const authRouter = Router();
 
 // POST /api/v1/auth/register
 authRouter.post('/register', signupRateLimiter, async (req, res) => {
-  const { username, email, password, honeypot } = req.body;
-
-  // Honeypot check
-  if (honeypot) {return void fail(res, 400, 'VALIDATION_ERROR', 'Registration failed');}
+  const { username, email, password, website } = req.body;
+  const caughtBot = typeof website === 'string' && website.trim().length > 0;
 
   if (!username || !email || !password) {return void fail(res, 400, 'VALIDATION_ERROR', 'username, email, and password are required');}
   if (!/^[A-Za-z0-9]{3,24}$/.test(username)) {return void fail(res, 400, 'VALIDATION_ERROR', 'username must be 3-24 alphanumeric characters');}
@@ -26,7 +24,7 @@ authRouter.post('/register', signupRateLimiter, async (req, res) => {
   if (getUserByEmail(db, email)) {return void fail(res, 409, 'CONFLICT', 'Email already registered');}
   if (getUserByUsername(db, username)) {return void fail(res, 409, 'CONFLICT', 'Username already taken');}
 
-  const user = await createUser(db, username, email, password);
+  const user = await createUser(db, username, email, password, 'user', caughtBot ? 'unknown' : undefined);
   const session = createSession(db, user.id, req.ip, req.headers['user-agent']);
   setSessionCookie(res, session.sessionId);
 

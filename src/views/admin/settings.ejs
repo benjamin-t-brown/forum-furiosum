@@ -5,12 +5,20 @@
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
   <% if (success) { %><div class="success-msg"><%= success %></div><% } %>
 
-  <form method="POST" action="/admin/settings">
+  <form method="POST" action="<%= url('/admin/settings') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <div class="form-group">
       <label for="forumName">Forum Name</label>
       <input type="text" id="forumName" name="forumName" value="<%= settings.forumName %>" maxlength="80" required>
+    </div>
+
+    <div class="form-group">
+      <label for="homeIntro">
+        Home Page Introduction
+        <small style="font-weight:normal;color:var(--color-text-muted)"> &mdash; shown to all visitors at the top of the home page (purpose, rules, etc.)</small>
+      </label>
+      <textarea id="homeIntro" name="homeIntro" rows="6" maxlength="2000"><%= settings.homeIntro %></textarea>
     </div>
 
     <div class="form-group">
@@ -41,8 +49,18 @@
       </div>
     </div>
 
+    <div class="form-group">
+      <label for="themeColorSurface">Surface Color (hex)</label>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <input type="color" id="themeColorSurfacePicker" value="<%= settings.themeColorSurface %>"
+          oninput="document.getElementById('themeColorSurface').value=this.value">
+        <input type="text" id="themeColorSurface" name="themeColorSurface" value="<%= settings.themeColorSurface %>"
+          pattern="^#[0-9a-fA-F]{6}$" style="width:120px">
+      </div>
+    </div>
+
     <button type="submit" class="btn">Save Settings</button>
-    <a href="/admin" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/admin') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

@@ -1,9 +1,31 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../../db/db';
 import { getEmbedThreadById } from '../../services/threads';
-import { listPosts, createPost, resolveEmbedPostApproval } from '../../services/posts';
+import { listPosts, createPost, resolveReplyApproval } from '../../services/posts';
 import { renderBody } from '../../utils/renderBody';
 import { embedFramePolicy } from '../../middleware/embedFramePolicy';
+import {
+  parseEmbedPadding,
+  embedPaddingStyle,
+  embedPaddingQueryString,
+  appendEmbedPaddingQuery,
+} from '../../utils/embedPadding';
+import { redirectTo, withBasePath } from '../../utils/basePath';
+import { getPostBodyValidationError } from '../../utils/postBodyLimits';
+import { canPostToThread } from '../../utils/threadLock';
+
+function getEmbedPostedNotice(posted: string | undefined): { message: string; kind: 'success' | 'info' } | null {
+  if (posted === 'pending') {
+    return {
+      message: 'Your comment was submitted and is awaiting moderation.',
+      kind: 'info',
+    };
+  }
+  if (posted === '1') {
+    return { message: 'Your comment was posted.', kind: 'success' };
+  }
+  return null;
+}
 
 export const embedRouter = Router();
 
@@ -17,7 +39,7 @@ function renderEmbedThread(
     page?: number;
     error?: string | null;
     body?: string;
-    notice?: string | null;
+    notice?: { message: string; kind: 'success' | 'info' } | null;
   } = {}
 ): void {
   const db = getDb();
@@ -31,11 +53,21 @@ function renderEmbedThread(
   }
 
   const page = Math.max(1, options.page ?? 1);
-  const posts = listPosts(db, threadId, { page, limit: 20, role: req.user?.role });
+  const posts = listPosts(db, threadId, {
+    page,
+    limit: 20,
+    role: req.user?.role,
+    viewerUserId: req.user?.id,
+  });
   const postsWithHtml = {
     ...posts,
     data: posts.data.map((p) => ({ ...p, bodyHtml: renderBody(p.body) })),
   };
+
+  const embedPadding = parseEmbedPadding(req.query);
+  const paddingStyle = embedPaddingStyle(embedPadding);
+  const paddingQuery = embedPaddingQueryString(req.query);
+  const forumHomeUrl = `${req.protocol}://${req.get('host')}${withBasePath('/')}`;
 
   res.render('embed/thread', {
     title: 'Comments',
@@ -48,7 +80,10 @@ function renderEmbedThread(
     error: options.error ?? null,
     body: options.body ?? '',
     notice: options.notice ?? null,
-    authReturnUrl: `/embed/auth-return?threadId=${encodeURIComponent(threadId)}`,
+    authReturnUrl: withBasePath(`/embed/auth-return?threadId=${encodeURIComponent(threadId)}`),
+    paddingStyle,
+    paddingQuery,
+    forumHomeUrl,
   });
 }
 
@@ -83,12 +118,7 @@ embedRouter.get('/auth-return', (req, res) => {
 // GET /embed/threads/:id
 embedRouter.get('/threads/:id', (req, res) => {
   const page = Math.max(1, parseInt(req.query.page as string ?? '1', 10) || 1);
-  let notice: string | null = null;
-  if (req.query.posted === 'pending') {
-    notice = 'Your comment was submitted and is awaiting moderation.';
-  } else if (req.query.posted === '1') {
-    notice = 'Your comment was posted.';
-  }
+  const notice = getEmbedPostedNotice(req.query.posted as string | undefined);
   renderEmbedThread(req, res, req.params.id as string, { page, notice });
 });
 
@@ -102,19 +132,27 @@ embedRouter.post('/threads/:id/posts', (req, res) => {
   }
 
   if (!req.user) {
-    const next = `/embed/auth-return?threadId=${encodeURIComponent(threadId)}`;
-    return res.redirect(`/login?next=${encodeURIComponent(next)}`);
+    const next = withBasePath(`/embed/auth-return?threadId=${encodeURIComponent(threadId)}`);
+    return redirectTo(res, `/login?next=${encodeURIComponent(next)}`);
+  }
+
+  if (!canPostToThread(!!thread.isLocked, req.user)) {
+    return renderEmbedThread(req, res, threadId, {
+      error: 'This thread is locked. Only moderators can post comments.',
+      body: req.body.body ?? '',
+    });
   }
 
   const { body } = req.body;
-  if (!body || body.length < 1 || body.length > 10000) {
+  const bodyError = getPostBodyValidationError(body ?? '');
+  if (bodyError) {
     return renderEmbedThread(req, res, threadId, {
-      error: 'Comment is required (max 10000 characters).',
+      error: bodyError,
       body: body ?? '',
     });
   }
 
-  const approvalStatus = resolveEmbedPostApproval(req.user.trust);
+  const approvalStatus = resolveReplyApproval(req.user.trust, thread.replyApprovalTrust);
   createPost(db, {
     threadId,
     authorUserId: req.user.id,
@@ -123,5 +161,5 @@ embedRouter.post('/threads/:id/posts', (req, res) => {
   });
 
   const posted = approvalStatus === 'approved' ? '1' : 'pending';
-  res.redirect(`/embed/threads/${threadId}?posted=${posted}`);
+  redirectTo(res, appendEmbedPaddingQuery(`/embed/threads/${threadId}?posted=${posted}`, req.query));
 });

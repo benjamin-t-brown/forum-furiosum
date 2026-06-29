@@ -1,8 +1,18 @@
 import Database from 'better-sqlite3';
+import crypto from 'crypto';
 import type { User, PaginatedResult } from '../models';
+import { hashPassword } from './auth';
+import { deleteUserSessions } from './session';
+import { writeAuditLog } from './moderation';
+import { redactedEmailForId, redactedUsernameForId, isValidUsername } from '../utils/authorDisplay';
+import { getUserByUsername } from './auth';
 
 export function getUserById(db: Database.Database, id: string): User | null {
   return (db.prepare('SELECT * FROM users WHERE id = ? AND isDeleted = 0').get(id) as User | undefined) ?? null;
+}
+
+export function getUserByIdForAdmin(db: Database.Database, id: string): User | null {
+  return (db.prepare('SELECT * FROM users WHERE id = ?').get(id) as User | undefined) ?? null;
 }
 
 export function listUsers(
@@ -45,9 +55,118 @@ export function updateUser(
   return (db.prepare('SELECT * FROM users WHERE id = ?').get(id) as User | undefined) ?? null;
 }
 
-export function searchUsers(db: Database.Database, query: string): User[] {
-  const q = `%${query}%`;
+export function searchUsers(
+  db: Database.Database,
+  query: string,
+  options: { includeDeleted?: boolean; limit?: number } = {}
+): User[] {
+  const trimmed = query.trim();
+  if (!trimmed) {return [];}
+
+  const q = `%${trimmed}%`;
+  const deletedFilter = options.includeDeleted ? '' : 'AND isDeleted = 0';
+  const limit = Math.min(50, Math.max(1, options.limit ?? 20));
+
   return db.prepare(
-    'SELECT * FROM users WHERE (username LIKE ? OR email LIKE ?) AND isDeleted = 0 LIMIT 20'
-  ).all(q, q) as User[];
+    `SELECT * FROM users WHERE (username LIKE ? OR email LIKE ?) ${deletedFilter} ORDER BY username LIMIT ?`
+  ).all(q, q, limit) as User[];
+}
+
+export async function deleteAccount(
+  db: Database.Database,
+  userId: string,
+  actorUserId: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = db.prepare('SELECT id FROM users WHERE id = ? AND isDeleted = 0').get(userId) as
+    { id: string } | undefined;
+  if (!user) {return { success: false, error: 'User not found' };}
+
+  const scrambledPassword = await hashPassword(crypto.randomUUID());
+  updateUser(db, userId, {
+    username: redactedUsernameForId(userId),
+    email: redactedEmailForId(userId),
+    isDeleted: 1,
+    passwordHash: scrambledPassword,
+  });
+
+  deleteUserSessions(db, userId);
+  writeAuditLog(db, {
+    actorUserId,
+    targetType: 'user',
+    targetId: userId,
+    action: 'delete',
+    reason,
+  });
+
+  return { success: true };
+}
+
+export function adminSetUsername(
+  db: Database.Database,
+  userId: string,
+  username: string,
+  actorUserId: string,
+  reason?: string
+): { success: boolean; error?: string } {
+  const trimmed = username.trim();
+  if (!isValidUsername(trimmed)) {
+    return { success: false, error: 'Username must be 3–24 alphanumeric characters' };
+  }
+
+  const user = getUserByIdForAdmin(db, userId);
+  if (!user) {return { success: false, error: 'User not found' };}
+  if (user.isDeleted) {return { success: false, error: 'Cannot rename a deleted account' };}
+
+  if (trimmed.toLowerCase() === user.username.toLowerCase()) {
+    return { success: true };
+  }
+
+  const existing = getUserByUsername(db, trimmed);
+  if (existing && existing.id !== userId) {
+    return { success: false, error: 'Username already taken' };
+  }
+
+  updateUser(db, userId, { username: trimmed });
+  writeAuditLog(db, {
+    actorUserId,
+    targetType: 'user',
+    targetId: userId,
+    action: 'username_change',
+    reason: reason ?? `Changed username from ${user.username} to ${trimmed}`,
+  });
+
+  return { success: true };
+}
+
+export async function adminSetPassword(
+  db: Database.Database,
+  userId: string,
+  password: string,
+  actorUserId: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = getUserByIdForAdmin(db, userId);
+  if (!user) {return { success: false, error: 'User not found' };}
+  if (user.isDeleted) {return { success: false, error: 'Cannot change password for a deleted account' };}
+
+  if (!password || password.length < 8) {
+    return { success: false, error: 'Password must be at least 8 characters' };
+  }
+  if (password.length > 128) {
+    return { success: false, error: 'Password must be under 128 characters' };
+  }
+
+  const passwordHash = await hashPassword(password);
+  updateUser(db, userId, { passwordHash });
+  deleteUserSessions(db, userId);
+  writeAuditLog(db, {
+    actorUserId,
+    targetType: 'user',
+    targetId: userId,
+    action: 'password_change',
+    reason: reason ?? 'Admin password reset',
+  });
+
+  return { success: true };
 }

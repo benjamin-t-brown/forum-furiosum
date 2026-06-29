@@ -3,7 +3,7 @@
 <div class="form-page">
   <h1>Edit Thread</h1>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
-  <form method="POST" action="/threads/<%= thread.id %>/edit">
+  <form method="POST" action="<%= url('/threads/' + (thread.id) + '/edit') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-group">
       <label for="title">Title</label>
@@ -13,8 +13,32 @@
       <label for="body">Body</label>
       <textarea id="body" name="body" rows="10" maxlength="10000" required><%= thread.body %></textarea>
     </div>
+    <% if (canModerateThread) { %>
+      <%- include('../partials/reply-approval-trust-select') %>
+      <fieldset class="moderation-fieldset">
+        <legend>Visibility</legend>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="isHidden" value="1" <%= thread.isHidden ? 'checked' : '' %>>
+            Hidden (staff can still see this thread)
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="isDeleted" value="1" <%= thread.isDeleted ? 'checked' : '' %>>
+            Deleted (soft-delete; removes from public lists)
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="isLocked" value="1" <%= thread.isLocked ? 'checked' : '' %>>
+            Locked (only moderators can reply or edit comments)
+          </label>
+        </div>
+      </fieldset>
+    <% } %>
     <button type="submit" class="btn">Save Changes</button>
-    <a href="/threads/<%= thread.id %>" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/threads/' + (thread.id) + '') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

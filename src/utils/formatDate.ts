@@ -1,6 +1,8 @@
 /** Format a stored timestamp for display as an ISO 8601 calendar date (YYYY-MM-DD). */
-export function formatDisplayDate(value: string | Date | null | undefined): string {
-  if (value == null || value === '') {
+export function formatDisplayDate(
+  value: string | Date | null | undefined,
+): string {
+  if (value === null || value === undefined || value === '') {
     return '';
   }
 

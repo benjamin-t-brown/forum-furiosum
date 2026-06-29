@@ -7,21 +7,24 @@
   <div class="thread-preview" style="margin-bottom:1.5rem;padding:1rem;border:1px solid var(--color-border)">
     <p style="font-size:0.8rem;color:var(--color-text-muted)">
       By <strong><%= post.authorUsername %></strong>
-      in thread <a href="/threads/<%= post.threadId %>"><%= post.threadId.substring(0,8) %>&#8230;</a>
+      in thread <a href="<%= url('/threads/' + (post.threadId) + '') %>"><%= post.threadId.substring(0,8) %>&#8230;</a>
+      <% if (post.isDeleted) { %>
+      &mdash; <span class="badge badge-deleted">Deleted</span>
+      <% } else { %>
       &mdash; Status: <strong><%= post.approvalStatus %></strong>
       <% if (post.isHidden) { %> | <span class="badge badge-hidden">Hidden</span><% } %>
-      <% if (post.isDeleted) { %> | <span class="badge badge-deleted">Deleted</span><% } %>
+      <% } %>
     </p>
     <hr style="margin:0.75rem 0;border-color:var(--color-border)">
     <div style="white-space:pre-wrap;font-size:0.9rem"><%= post.body %></div>
   </div>
 
-  <form method="POST" action="/admin/posts/<%= post.id %>/edit">
+  <form method="POST" action="<%= url('/admin/posts/' + (post.id) + '/edit') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <div class="form-group">
       <label for="body">Body</label>
-      <textarea id="body" name="body" rows="8" maxlength="10000"><%= post.body %></textarea>
+      <textarea id="body" name="body" rows="8" maxlength="<%= maxPostBodyLength %>"><%= post.body %></textarea>
     </div>
 
     <div class="form-group">
@@ -52,7 +55,7 @@
     </div>
 
     <button type="submit" class="btn">Save Changes</button>
-    <a href="/admin" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/admin') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

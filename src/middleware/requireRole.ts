@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import type { UserRole } from '../models';
+import { redirectTo } from '../utils/basePath';
 
 export function requireRole(...roles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -7,7 +8,7 @@ export function requireRole(...roles: UserRole[]) {
       if (req.originalUrl.includes('/api/')) {
         res.status(401).json({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
       } else {
-        res.redirect('/login');
+        redirectTo(res, '/login');
       }
       return;
     }

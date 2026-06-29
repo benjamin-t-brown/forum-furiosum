@@ -1,0 +1,12 @@
+<span class="author-byline">
+<% if (authorIsDeleted || (typeof plain !== 'undefined' && plain)) { %>
+  <%= authorUsername %>
+<% } else { %>
+  <a href="<%= url('/users/' + (authorUserId) + '') %>"><%= authorUsername %></a>
+<% } %>
+<% if (!authorIsDeleted && typeof authorTrust !== 'undefined' && authorTrust === 'verified') { %>
+  <span class="author-trust-badge badge badge-verified">Verified</span>
+<% } else if (!authorIsDeleted && typeof authorTrust !== 'undefined' && authorTrust === 'banned') { %>
+  <span class="author-trust-badge badge badge-banned">Banned</span>
+<% } %>
+</span>

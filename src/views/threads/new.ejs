@@ -3,7 +3,7 @@
 <div class="form-page">
   <h1>New Thread</h1>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
-  <form method="POST" action="/threads/new">
+  <form method="POST" action="<%= url('/threads/new') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-group">
       <label for="categoryId">Category</label>
@@ -22,8 +22,11 @@
       <label for="body">Body</label>
       <textarea id="body" name="body" rows="10" maxlength="10000" required placeholder="Write your post..."></textarea>
     </div>
+    <% if (canModerateThread) { %>
+      <%- include('../partials/reply-approval-trust-select') %>
+    <% } %>
     <button type="submit" class="btn">Post Thread</button>
-    <a href="/" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

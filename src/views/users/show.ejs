@@ -5,14 +5,28 @@
     <%- include('../partials/avatar', { username: profile.username }) %>
     <div class="profile-info">
       <h1><%= profile.username %></h1>
+      <% if (profile.isDeleted) { %><p><span class="badge badge-deleted">Deleted</span></p><% } %>
+      <% if (profile.trust === 'verified') { %>
+        <p class="profile-trust-badge"><span class="badge badge-verified">Verified</span></p>
+      <% } else if (profile.trust === 'banned') { %>
+        <p class="profile-trust-badge"><span class="badge badge-banned">Banned</span></p>
+      <% } %>
       <p class="profile-role">Role: <span class="badge badge-<%= profile.role %>"><%= profile.role %></span></p>
+      <% if (user && (user.role === 'admin' || user.role === 'moderator') && profile.trust !== 'verified' && profile.trust !== 'banned') { %>
+        <p class="profile-status">Status: <span class="badge badge-status"><%= profile.trust %></span></p>
+      <% } %>
       <p class="profile-joined">Joined: <%= formatDate(profile.createdAt) %></p>
       <% if (profile.lastLoginAt) { %><p>Last login: <%= formatDate(profile.lastLoginAt) %></p><% } %>
     </div>
   </div>
-  <% if (user && (user.id === profile.id || user.role === 'admin')) { %>
+  <% if (user && user.id === profile.id) { %>
     <div class="profile-actions">
-      <a href="/users/<%= profile.id %>/edit" class="btn btn-sm">Edit Profile</a>
+      <a href="<%= url('/users/' + (profile.id) + '/edit') %>" class="btn btn-sm">Edit Profile</a>
+    </div>
+  <% } else if (user && user.role === 'admin') { %>
+    <div class="profile-actions">
+      <a href="<%= url('/admin/users/' + (profile.id) + '/profile') %>" class="btn btn-sm">Admin: Edit Profile</a>
+      <a href="<%= url('/admin/users/' + (profile.id) + '/edit') %>" class="btn btn-sm btn-secondary">Role &amp; Trust</a>
     </div>
   <% } %>
 </div>

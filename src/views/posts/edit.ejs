@@ -3,14 +3,14 @@
 <div class="form-page">
   <h1>Edit Post</h1>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
-  <form method="POST" action="/posts/<%= post.id %>/edit">
+  <form method="POST" action="<%= url('/posts/' + (post.id) + '/edit') %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="form-group">
       <label for="body">Post</label>
-      <textarea id="body" name="body" rows="10" maxlength="10000" required><%= post.body %></textarea>
+      <textarea id="body" name="body" rows="10" maxlength="<%= maxPostBodyLength %>" required><%= post.body %></textarea>
     </div>
     <button type="submit" class="btn">Save Changes</button>
-    <a href="/threads/<%= post.threadId %>" class="btn btn-secondary">Cancel</a>
+    <a href="<%= url('/threads/' + (post.threadId) + '') %>" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 

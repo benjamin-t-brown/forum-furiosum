@@ -2,19 +2,60 @@
 
 <div class="form-page">
   <h1>Edit Profile</h1>
+  <p style="margin-bottom:1rem"><a href="<%= url('/users/' + (profile.id) + '') %>">&larr; Back to profile</a></p>
   <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
-  <form method="POST" action="/users/<%= profile.id %>/edit">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-    <div class="form-group">
-      <label for="theme">Theme</label>
-      <select name="theme" id="theme">
-        <option value="light"<%= (!profile.theme || profile.theme === 'light') ? ' selected' : '' %>>Light</option>
-        <option value="dark"<%= profile.theme === 'dark' ? ' selected' : '' %>>Dark</option>
-      </select>
-    </div>
-    <button type="submit" class="btn">Save</button>
-    <a href="/users/<%= profile.id %>" class="btn btn-secondary">Cancel</a>
-  </form>
+  <% if (success) { %><div class="success-msg"><%= success %></div><% } %>
+
+  <% if (user && user.id === profile.id) { %>
+    <hr style="margin:2rem 0;border-color:var(--color-border)">
+
+    <h2 style="font-size:1rem;margin-bottom:0.75rem">Username</h2>
+    <p style="margin-bottom:0.75rem;color:var(--color-text-muted);font-size:0.85rem">
+      Current username: <strong><%= profile.username %></strong>
+    </p>
+
+    <% if (pendingUsernameRequest) { %>
+      <div class="notice-msg">
+        Pending change to <strong><%= pendingUsernameRequest.requestedUsername %></strong>
+        (submitted <%= formatDate(pendingUsernameRequest.createdAt) %>) — awaiting admin approval.
+      </div>
+    <% } else { %>
+      <form method="POST" action="<%= url('/users/' + (profile.id) + '/username-request') %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-group">
+          <label for="requestedUsername">Request new username</label>
+          <input type="text" id="requestedUsername" name="requestedUsername" pattern="^[A-Za-z0-9]{3,24}$"
+            maxlength="24" required placeholder="New username">
+          <small style="display:block;margin-top:0.25rem;color:var(--color-text-muted)">
+            3–24 alphanumeric characters. Requires admin approval.
+          </small>
+        </div>
+        <button type="submit" class="btn">Request Username Change</button>
+      </form>
+    <% } %>
+
+    <hr style="margin:2rem 0;border-color:var(--color-border)">
+
+    <h2 style="font-size:1rem;margin-bottom:0.75rem;color:var(--color-error)">Delete Account</h2>
+    <p style="margin-bottom:0.75rem;color:var(--color-text-muted);font-size:0.85rem">
+      Your replies will remain, but your username will appear as <strong>[deleted]</strong>.
+      This cannot be undone.
+    </p>
+    <form method="POST" action="<%= url('/users/' + (profile.id) + '/delete') %>"
+      onsubmit="return confirm('Permanently delete your account? This cannot be undone.');">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-group">
+        <label for="password">Confirm your password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label for="confirmDelete">Type DELETE to confirm</label>
+        <input type="text" id="confirmDelete" name="confirmDelete" required autocomplete="off"
+          pattern="DELETE" placeholder="DELETE">
+      </div>
+      <button type="submit" class="btn" style="background:var(--color-error)">Delete My Account</button>
+    </form>
+  <% } %>
 </div>
 
 <%- include('../partials/layout-bottom') %>

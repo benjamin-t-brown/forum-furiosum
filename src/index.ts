@@ -11,8 +11,14 @@ import { apiRouter } from './routes/api';
 import { sessionMiddleware } from './middleware/session';
 import { csrfMiddleware } from './middleware/csrf';
 import { requestId } from './middleware/requestId';
+import { trimBody } from './middleware/trimBody';
 import { getForumSettings } from './services/settings';
 import { formatDisplayDate } from './utils/formatDate';
+import { editButtonLabel } from './utils/editButtonLabel';
+import { canPostToThread } from './utils/threadLock';
+import { wasContentEdited } from './utils/wasContentEdited';
+import { MAX_POST_BODY_LENGTH } from './utils/postBodyLimits';
+import { getBasePath, withBasePath } from './utils/basePath';
 import logger from './logger';
 
 const PORT = parseInt(process.env.PORT ?? '9827', 10);
@@ -26,18 +32,36 @@ async function main() {
   await bootstrapAdmin(db);
 
   const app = express();
+  const basePath = getBasePath();
+
+  app.set('trust proxy', 1);
 
   // View engine
   app.set('view engine', 'ejs');
   app.set('views', path.join(process.cwd(), 'src/views'));
   app.locals.formatDate = formatDisplayDate;
+  app.locals.editButtonLabel = editButtonLabel;
+  app.locals.canPostToThread = canPostToThread;
+  app.locals.wasContentEdited = wasContentEdited;
+  app.locals.maxPostBodyLength = MAX_POST_BODY_LENGTH;
+  app.locals.url = withBasePath;
+  app.locals.basePath = basePath;
+
+  if (basePath) {
+    logger.info({ basePath }, 'Serving forum under BASE_PATH');
+  }
 
   // Static files
-  app.use(express.static(path.join(process.cwd(), 'public')));
+  const publicDir = path.join(process.cwd(), 'public');
+  app.use(express.static(publicDir));
+  app.get('/favicon.ico', (_req, res) => {
+    res.sendFile(path.join(publicDir, 'favicon.png'));
+  });
 
   // Body parsing
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
+  app.use(trimBody);
 
   // Cookie parsing (required by csurf cookie mode)
   app.use(cookieParser());
@@ -68,7 +92,7 @@ async function main() {
   function getErrorLocals(req: express.Request) {
     const db = getDb();
     let settings;
-    try { settings = getForumSettings(db); } catch { settings = { forumName: 'Forum Furiosum', topBarLinks: [], featuredCategories: [], themeColorPrimary: '#8eb1c7', themeColorAccent: '#b02e0c' }; }
+    try { settings = getForumSettings(db); } catch { settings = { forumName: 'Forum Furiosum', homeIntro: '', topBarLinks: [], featuredCategories: [], themeColorPrimary: '#a8cbe1', themeColorAccent: '#b02e0c', themeColorSurface: '#ebeae6' }; }
     return { user: req.user ?? null, settings, forumName: settings.forumName, csrfToken: '' };
   }
 

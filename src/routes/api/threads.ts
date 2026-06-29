@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { getDb } from '../../db/db';
 import { listThreads, getThreadById, createThread, updateThread, deleteThread } from '../../services/threads';
-import { listPosts, createPost } from '../../services/posts';
+import { listPosts, createPost, resolveReplyApproval, resolveContentApproval } from '../../services/posts';
 import { requireAuth } from '../../middleware/requireAuth';
 import { requireRole } from '../../middleware/requireRole';
-import { writeAuditLog, approveThread, hideThread } from '../../services/moderation';
+import { writeAuditLog, approveThread, hideThread, lockThread } from '../../services/moderation';
 import { ok, fail, parsePagination } from './helpers';
+import { getPostBodyValidationError } from '../../utils/postBodyLimits';
+import { canPostToThread } from '../../utils/threadLock';
 
 export const threadsRouter = Router();
 
@@ -35,7 +37,12 @@ threadsRouter.get('/:id/posts', (req, res) => {
   const db = getDb();
   const thread = getThreadById(db, (req.params.id as string), req.user?.role);
   if (!thread) {return void fail(res, 404, 'NOT_FOUND', 'Thread not found');}
-  const result = listPosts(db, (req.params.id as string), { page, limit, role: req.user?.role });
+  const result = listPosts(db, (req.params.id as string), {
+    page,
+    limit,
+    role: req.user?.role,
+    viewerUserId: req.user?.id,
+  });
   ok(res, result);
 });
 
@@ -46,7 +53,8 @@ threadsRouter.post('/', requireAuth, (req, res) => {
   if (title.length < 3 || title.length > 120) {return void fail(res, 400, 'VALIDATION_ERROR', 'title must be 3-120 characters');}
   if (body.length < 1 || body.length > 10000) {return void fail(res, 400, 'VALIDATION_ERROR', 'body must be 1-10000 characters');}
   const db = getDb();
-  const thread = createThread(db, { categoryId, authorUserId: req.user!.id, title, body });
+  const approvalStatus = resolveContentApproval(req.user!.trust);
+  const thread = createThread(db, { categoryId, authorUserId: req.user!.id, title, body, approvalStatus });
   ok(res, thread, 201);
 });
 
@@ -56,10 +64,20 @@ threadsRouter.post('/:id/posts', requireAuth, (req, res) => {
   const thread = getThreadById(db, (req.params.id as string), req.user?.role);
   if (!thread) {return void fail(res, 404, 'NOT_FOUND', 'Thread not found');}
 
-  const { body } = req.body;
-  if (!body || body.length < 1 || body.length > 10000) {return void fail(res, 400, 'VALIDATION_ERROR', 'body must be 1-10000 characters');}
+  if (!canPostToThread(!!thread.isLocked, req.user)) {
+    return void fail(res, 403, 'FORBIDDEN', 'This thread is locked');
+  }
 
-  const post = createPost(db, { threadId: (req.params.id as string), authorUserId: req.user!.id, body });
+  const { body } = req.body;
+  const bodyError = getPostBodyValidationError(body ?? '');
+  if (bodyError) {return void fail(res, 400, 'VALIDATION_ERROR', bodyError);}
+
+  const post = createPost(db, {
+    threadId: (req.params.id as string),
+    authorUserId: req.user!.id,
+    body,
+    approvalStatus: resolveReplyApproval(req.user!.trust, thread.replyApprovalTrust),
+  });
   ok(res, post, 201);
 });
 
@@ -117,4 +135,13 @@ threadsRouter.post('/:id/hide', requireAuth, requireRole('admin', 'moderator'), 
   const result = hideThread(db, (req.params.id as string), req.user!.id, hide, req.body.reason);
   if (!result.success) {return void fail(res, 404, 'NOT_FOUND', result.error ?? 'Thread not found');}
   ok(res, { hidden: hide });
+});
+
+// POST /api/v1/threads/:id/lock
+threadsRouter.post('/:id/lock', requireAuth, requireRole('admin', 'moderator'), (req, res) => {
+  const db = getDb();
+  const lock = req.body.lock !== false;
+  const result = lockThread(db, (req.params.id as string), req.user!.id, lock, req.body.reason);
+  if (!result.success) {return void fail(res, 404, 'NOT_FOUND', result.error ?? 'Thread not found');}
+  ok(res, { locked: lock });
 });

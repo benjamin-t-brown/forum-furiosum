@@ -1,0 +1,15 @@
+<%- include('../partials/layout-top', { title: title }) %>
+
+<div class="auth-complete-page">
+  <div class="notice-msg auth-complete-msg">
+    <p class="auth-complete-message"><%= message %></p>
+    <p class="auth-complete-redirect"><%= redirectMessage %> <a href="<%= next %>">Continue now</a></p>
+  </div>
+</div>
+<script>
+setTimeout(function () {
+  window.location.href = <%- JSON.stringify(next) %>;
+}, 2000);
+</script>
+
+<%- include('../partials/layout-bottom') %>

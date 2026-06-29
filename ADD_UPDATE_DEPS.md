@@ -1,6 +1,6 @@
 # Adding and updating dependencies
 
-This project pins dependency versions and restricts which packages may run install-time lifecycle scripts (`preinstall`, `install`, `postinstall`). The goal is reproducible installs and a smaller attack surface from arbitrary postinstall code.
+This project pins dependency versions, allows only registry packages (no git URLs in `package.json`), and restricts which packages may run install-time lifecycle scripts (`preinstall`, `install`, `postinstall`). The goal is reproducible installs and a smaller attack surface from arbitrary postinstall code.
 
 ## Requirements
 
@@ -42,6 +42,18 @@ npm --version   # should be 11.17.0 or newer
 | `save-exact=true` | New dependencies are saved without `^` or `~` ranges |
 | `strict-allow-scripts=true` | Install fails if a dependency has install scripts not covered by `allowScripts` |
 
+### Registry-only dependencies
+
+Direct dependencies in `package.json` must use npm registry versions (for example `1.2.3`), not git repository URLs (`github:…`, `git+https://…`, and similar).
+
+Check before committing dependency changes:
+
+```bash
+npm run deps:check-no-git
+```
+
+If you need a package that is not published to npm, publish it to the registry first or choose an alternative dependency.
+
 ### `package.json` → `allowScripts`
 
 Only approved packages may run install scripts. Everything else is blocked.
@@ -79,16 +91,17 @@ npm approve-scripts <package-name>
 npm deny-scripts <package-name>
 ```
 
-Then confirm nothing is left unreviewed:
+Then confirm dependency policy is clean:
 
 ```bash
-npm run deps:check-scripts
+npm run deps:check
 ```
 
 Expected output when clean:
 
 ```text
 No packages with unreviewed install scripts.
+No git repository dependencies in package.json.
 ```
 
 ## Updating a dependency
@@ -113,10 +126,10 @@ After updating:
 
    `npm approve-scripts` writes pinned `pkg@version` entries to `allowScripts`.
 
-2. **Check for new install scripts** introduced by the update:
+2. **Check dependency policy** (install scripts and no git URLs):
 
    ```bash
-   npm run deps:check-scripts
+   npm run deps:check
    ```
 
 3. **Run tests:**
@@ -131,7 +144,9 @@ After updating:
 
 | Command | Purpose |
 | --- | --- |
+| `npm run deps:check` | Run install-script and no-git dependency checks |
 | `npm run deps:check-scripts` | List packages with install scripts not yet in `allowScripts` |
+| `npm run deps:check-no-git` | Fail if `package.json` lists git repository dependencies |
 | `npm approve-scripts <pkg> …` | Allow install scripts for specific packages (pinned by default) |
 | `npm approve-scripts --allow-scripts-pending` | Same as `deps:check-scripts` |
 | `npm deny-scripts <pkg> …` | Explicitly deny install scripts (name-only entries) |

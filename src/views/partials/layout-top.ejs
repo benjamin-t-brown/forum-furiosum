@@ -4,15 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> — <%= forumName %></title>
-  <link rel="stylesheet" href="/css/main.css">
-  <script src="/js/theme.js" type="module" defer></script>
+  <link rel="icon" href="<%= url('/favicon.png') %>" type="image/png">
+  <link rel="stylesheet" href="<%= url('/css/main.css') %>">
+  <% if (settings) { %>
+  <style>
+    :root, [data-theme="dark"] {
+      --color-primary: <%= settings.themeColorPrimary %>;
+      --color-accent: <%= settings.themeColorAccent %>;
+      --color-surface: <%= settings.themeColorSurface %>;
+      --color-badge-bg: <%= settings.themeColorSurface %>;
+      --topbar-bg: <%= settings.themeColorPrimary %>;
+      --color-border: <%= settings.themeColorPrimary %>;
+    }
+  </style>
+  <% } %>
+  <%# theme.js disabled until dark mode toggle is fixed %>
 </head>
-<body data-user-id="<%= user ? user.id : '' %>">
+<body data-user-id="<%= user ? user.id : '' %>" data-base-path="<%= basePath %>">
 <header class="topbar">
   <div class="topbar-inner">
-    <a href="/" class="topbar-brand"><%= forumName %></a>
+    <a href="<%= url('/') %>" class="topbar-brand"><%= forumName %></a>
     <nav class="topbar-nav">
-      <a href="/">Home</a>
+      <a href="<%= url('/') %>">Home</a>
       <% if (settings && settings.topBarLinks) { %>
         <% settings.topBarLinks.forEach(function(link) { %>
           <a href="<%= link.url %>" rel="noopener noreferrer"><%= link.label %></a>
@@ -21,19 +34,18 @@
     </nav>
     <div class="topbar-auth">
       <% if (user) { %>
-        <a href="/users/<%= user.id %>"><%= user.username %></a>
+        <a href="<%= url('/users/' + (user.id) + '') %>"><%= user.username %></a>
         <% if (user.role === 'admin' || user.role === 'moderator') { %>
-          <a href="/admin" class="btn btn-sm topbar-admin-btn">Admin</a>
+          <a href="<%= url('/admin') %>" class="btn btn-sm topbar-admin-btn">Admin</a>
         <% } %>
-        <form method="POST" action="/logout" style="display:inline">
+        <form method="POST" action="<%= url('/logout') %>" style="display:inline">
           <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <button type="submit" class="btn-link">Logout</button>
         </form>
       <% } else { %>
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
+        <a href="<%= url('/login') %><% if (typeof currentPath !== 'undefined' && currentPath && currentPath !== url('/')) { %>?next=<%= encodeURIComponent(currentPath) %><% } %>">Login</a>
+        <a href="<%= url('/register') %>">Register</a>
       <% } %>
-      <button id="theme-toggle" class="btn-link" title="Toggle dark/light mode">&#9681;</button>
     </div>
   </div>
 </header>

@@ -3,7 +3,7 @@ import { createTestDb } from './helpers/db';
 import { createUser } from '../services/auth';
 import { createThread } from '../services/threads';
 import { createPost } from '../services/posts';
-import { writeAuditLog, getAuditLog, approveThread, hideThread, approvePost, hidePost, getPendingApprovals } from '../services/moderation';
+import { writeAuditLog, getAuditLog, approveThread, hideThread, lockThread, approvePost, hidePost, getPendingApprovals } from '../services/moderation';
 
 describe('Moderation service', () => {
   let db: ReturnType<typeof createTestDb>;
@@ -79,6 +79,18 @@ describe('Moderation service', () => {
       hideThread(db, threadId, adminId, false);
       const unhidden = db.prepare('SELECT isHidden FROM threads WHERE id = ?').get(threadId) as { isHidden: number };
       expect(unhidden.isHidden).toBe(0);
+    });
+  });
+
+  describe('lockThread', () => {
+    it('locks and unlocks a thread', () => {
+      lockThread(db, threadId, adminId, true, 'heated discussion');
+      const locked = db.prepare('SELECT isLocked FROM threads WHERE id = ?').get(threadId) as { isLocked: number };
+      expect(locked.isLocked).toBe(1);
+
+      lockThread(db, threadId, adminId, false);
+      const unlocked = db.prepare('SELECT isLocked FROM threads WHERE id = ?').get(threadId) as { isLocked: number };
+      expect(unlocked.isLocked).toBe(0);
     });
   });
 
