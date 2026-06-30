@@ -1,0 +1,1 @@
+<% if (value) { %><time datetime="<%= isoTimestamp(value) %>" class="local-time"<% if (typeof mode !== 'undefined' && mode) { %> data-mode="<%= mode %>"<% } %>><%= formatDate(value) %></time><% } %>

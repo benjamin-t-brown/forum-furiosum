@@ -9,7 +9,7 @@
     <div class="thread-meta">
       Posted by <%- include('../partials/author-link', { authorUsername: thread.authorUsername, authorUserId: thread.authorUserId, authorIsDeleted: thread.authorIsDeleted, authorTrust: thread.authorTrust }) %>
       in <strong><%= thread.categoryName %></strong>
-      on <%= formatDate(thread.createdAt) %>
+      on <%- include('../partials/local-time', { value: thread.createdAt }) %>
       <% if (user && (user.role === 'admin' || user.role === 'moderator')) { %>
         <%- include('../partials/status-badge', { item: thread }) %>
       <% } else if (thread.isLocked) { %>
@@ -35,7 +35,7 @@
         <div class="post-author">
           <%- include('../partials/avatar', { username: post.authorUsername }) %>
           <%- include('../partials/author-link', { authorUsername: post.authorUsername, authorUserId: post.authorUserId, authorIsDeleted: post.authorIsDeleted, authorTrust: post.authorTrust }) %>
-          <small><%= formatDate(post.createdAt) %></small>
+          <small><%- include('../partials/local-time', { value: post.createdAt }) %></small>
           <% if (user && (user.role === 'admin' || user.role === 'moderator' || (user.id === post.authorUserId && post.approvalStatus !== 'approved'))) { %>
             <%- include('../partials/status-badge', { item: post }) %>
           <% } %>

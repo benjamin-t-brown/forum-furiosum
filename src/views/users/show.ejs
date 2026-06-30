@@ -15,8 +15,8 @@
       <% if (user && (user.role === 'admin' || user.role === 'moderator') && profile.trust !== 'verified' && profile.trust !== 'banned') { %>
         <p class="profile-status">Status: <span class="badge badge-status"><%= profile.trust %></span></p>
       <% } %>
-      <p class="profile-joined">Joined: <%= formatDate(profile.createdAt) %></p>
-      <% if (profile.lastLoginAt) { %><p>Last login: <%= formatDate(profile.lastLoginAt) %></p><% } %>
+      <p class="profile-joined">Joined: <%- include('../partials/local-time', { value: profile.createdAt, mode: 'date' }) %></p>
+      <% if (profile.lastLoginAt) { %><p>Last login: <%- include('../partials/local-time', { value: profile.lastLoginAt }) %></p><% } %>
     </div>
   </div>
   <% if (user && user.id === profile.id) { %>

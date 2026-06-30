@@ -16,7 +16,7 @@
             <div class="post-author">
               <%- include('../partials/avatar', { username: post.authorUsername }) %>
               <%- include('../partials/author-link', { authorUsername: post.authorUsername, authorUserId: post.authorUserId, authorIsDeleted: post.authorIsDeleted, authorTrust: post.authorTrust, plain: true }) %>
-              <small><%= formatDate(post.createdAt) %></small>
+              <small><%- include('../partials/local-time', { value: post.createdAt }) %></small>
               <% if (post.approvalStatus !== 'approved' && user && user.id === post.authorUserId) { %>
                 <%- include('../partials/status-badge', { item: post }) %>
               <% } %>

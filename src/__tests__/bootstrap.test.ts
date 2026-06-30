@@ -32,12 +32,12 @@ describe('bootstrapAdmin', () => {
     expect(admin!.trust).toBe('verified');
   });
 
-  it('upgrades an existing bootstrap admin from trusted to verified', async () => {
-    await createUser(db, 'bootstrapadmin', 'bootstrap@example.com', 'test12345', 'admin', 'trusted');
+  it('skips creation when bootstrap username already exists with a different email', async () => {
+    await createUser(db, 'bootstrapadmin', 'old@example.com', 'test12345', 'admin');
 
     await bootstrapAdmin(db);
 
-    const admin = getUserByEmail(db, 'bootstrap@example.com');
-    expect(admin!.trust).toBe('verified');
+    expect(getUserByEmail(db, 'bootstrap@example.com')).toBeNull();
+    expect(getUserByEmail(db, 'old@example.com')).not.toBeNull();
   });
 });

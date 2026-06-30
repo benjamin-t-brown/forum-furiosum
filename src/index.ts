@@ -13,7 +13,7 @@ import { csrfMiddleware } from './middleware/csrf';
 import { requestId } from './middleware/requestId';
 import { trimBody } from './middleware/trimBody';
 import { getForumSettings } from './services/settings';
-import { formatDisplayDate } from './utils/formatDate';
+import { formatDisplayDate, toIsoTimestamp } from './utils/formatDate';
 import { editButtonLabel } from './utils/editButtonLabel';
 import { canPostToThread } from './utils/threadLock';
 import { wasContentEdited } from './utils/wasContentEdited';
@@ -40,6 +40,7 @@ async function main() {
   app.set('view engine', 'ejs');
   app.set('views', path.join(process.cwd(), 'src/views'));
   app.locals.formatDate = formatDisplayDate;
+  app.locals.isoTimestamp = toIsoTimestamp;
   app.locals.editButtonLabel = editButtonLabel;
   app.locals.canPostToThread = canPostToThread;
   app.locals.wasContentEdited = wasContentEdited;
@@ -92,7 +93,7 @@ async function main() {
   function getErrorLocals(req: express.Request) {
     const db = getDb();
     let settings;
-    try { settings = getForumSettings(db); } catch { settings = { forumName: 'Forum Furiosum', homeIntro: '', topBarLinks: [], featuredCategories: [], themeColorPrimary: '#a8cbe1', themeColorAccent: '#b02e0c', themeColorSurface: '#ebeae6' }; }
+    try { settings = getForumSettings(db); } catch { settings = { forumName: 'Forum Furiosum', homeIntro: '', topBarLinks: [], featuredCategories: [], themeColorPrimary: '#b3cfdf', themeColorAccent: '#b02e0c', themeColorSurface: '#ebeae6' }; }
     return { user: req.user ?? null, settings, forumName: settings.forumName, csrfToken: '' };
   }
 

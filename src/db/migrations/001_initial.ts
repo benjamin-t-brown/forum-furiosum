@@ -95,7 +95,7 @@ export function migration001(db: Database.Database): void {
       ('forumName', 'Forum Furiosum'),
       ('topBarLinks', '[]'),
       ('featuredCategories', '[]'),
-      ('themeColorPrimary', '#a8cbe1'),
+      ('themeColorPrimary', '#b3cfdf'),
       ('themeColorAccent', '#b02e0c');
 
     INSERT OR IGNORE INTO categories (id, slug, name, description, sortOrder)

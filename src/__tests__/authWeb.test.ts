@@ -11,7 +11,7 @@ import { requestId } from '../middleware/requestId';
 import { csrfMiddleware } from '../middleware/csrf';
 import { createUser } from '../services/auth';
 import { createSession } from '../services/session';
-import { formatDisplayDate } from '../utils/formatDate';
+import { formatDisplayDate, toIsoTimestamp } from '../utils/formatDate';
 import { editButtonLabel } from '../utils/editButtonLabel';
 import { withBasePath, getBasePath } from '../utils/basePath';
 import * as dbModule from '../db/db';
@@ -36,6 +36,7 @@ describe('Auth web routes', () => {
     app.set('view engine', 'ejs');
     app.set('views', path.join(process.cwd(), 'src/views'));
     app.locals.formatDate = formatDisplayDate;
+    app.locals.isoTimestamp = toIsoTimestamp;
     app.locals.editButtonLabel = editButtonLabel;
     app.locals.url = withBasePath;
     app.locals.basePath = getBasePath();

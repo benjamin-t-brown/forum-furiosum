@@ -33,7 +33,7 @@ describe('Settings service', () => {
     expect(settings.forumName).toBe('Forum Furiosum');
     expect(Array.isArray(settings.topBarLinks)).toBe(true);
     expect(Array.isArray(settings.featuredCategories)).toBe(true);
-    expect(settings.themeColorPrimary).toBe('#a8cbe1');
+    expect(settings.themeColorPrimary).toBe('#b3cfdf');
     expect(settings.themeColorSurface).toBe('#ebeae6');
   });
 

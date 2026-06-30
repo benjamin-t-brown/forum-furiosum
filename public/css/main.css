@@ -1,20 +1,20 @@
 /* ===== CSS CUSTOM PROPERTIES ===== */
 :root {
-  --color-primary: #a8cbe1;
+  --color-primary: #b3cfdf;
   --color-accent: #b02e0c;
   --color-accent2: #eb4511;
   --color-bg: #fefdff;
   --color-surface: #ebeae6;
   --color-text: #000;
   --color-text-muted: #113;
-  --color-border: #a8cbe1;
+  --color-border: #b3cfdf;
   --color-link: #b02e0c;
   --color-error: #b02e0c;
   --color-notice-bg: #fff8e6;
   --color-notice-border: #c9a227;
   --color-notice-text: #5c4a00;
   --color-badge-bg: #ebeae6;
-  --topbar-bg: #a8cbe1;
+  --topbar-bg: #b3cfdf;
   --topbar-text: #000;
 }
 
@@ -576,7 +576,7 @@ a:hover { text-decoration: underline; }
 .badge-deleted { background: #b02e0c; color: #fff; }
 .badge-hidden { background: #434138; color: #fff; }
 .badge-locked { background: #5c4d1f; color: #fff; }
-.badge-new { background: #a8cbe1; color: #000; }
+.badge-new { background: var(--color-primary); color: #000; }
 .badge-unapproved { background: #722108; color: #fff; }
 .badge-admin { background: #b02e0c; color: #fff; }
 .badge-moderator { background: #5f1807; color: #fff; }

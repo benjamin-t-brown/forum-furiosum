@@ -41,7 +41,7 @@ export function getForumSettings(db: Database.Database): ForumSettings {
     homeIntro: raw.homeIntro ?? '',
     topBarLinks,
     featuredCategories,
-    themeColorPrimary: raw.themeColorPrimary ?? '#a8cbe1',
+    themeColorPrimary: raw.themeColorPrimary ?? '#b3cfdf',
     themeColorAccent: raw.themeColorAccent ?? '#b02e0c',
     themeColorSurface: raw.themeColorSurface ?? '#ebeae6',
   };

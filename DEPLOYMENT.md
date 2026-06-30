@@ -25,12 +25,6 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 docker push 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest
 ```
 
-Requires AWS CLI credentials with permission to push to the `revirtualis/forum-furiosum` repository. Create the ECR repo first if it does not exist yet:
-
-```bash
-aws ecr create-repository --repository-name revirtualis/forum-furiosum
-```
-
 ---
 
 ## Prepare environment file

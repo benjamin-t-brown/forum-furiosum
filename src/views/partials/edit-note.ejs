@@ -1,5 +1,5 @@
 <% if (typeof wasContentEdited === 'function' && wasContentEdited(createdAt, lastEditedAt)) { %>
   <p class="edit-note">
-    Edited <%= formatDate(lastEditedAt) %><% if (editorUsername && lastEditedByUserId) { %> by <%- include('author-link', { authorUsername: editorUsername, authorUserId: lastEditedByUserId, authorIsDeleted: editorIsDeleted, plain: typeof plainAuthors !== 'undefined' && plainAuthors }) %><% } %>
+    Edited <%- include('local-time', { value: lastEditedAt }) %><% if (editorUsername && lastEditedByUserId) { %> by <%- include('author-link', { authorUsername: editorUsername, authorUserId: lastEditedByUserId, authorIsDeleted: editorIsDeleted, plain: typeof plainAuthors !== 'undefined' && plainAuthors }) %><% } %>
   </p>
 <% } %>

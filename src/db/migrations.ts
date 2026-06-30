@@ -9,6 +9,7 @@ import { migration007 } from './migrations/007_reply_approval_trust';
 import { migration008 } from './migrations/008_notify_state';
 import { migration009 } from './migrations/009_thread_locked';
 import { migration010, migration010RequiresOwnTransaction } from './migrations/010_ephemeral_users';
+import { migration011 } from './migrations/011_theme_color_primary_default';
 
 const migrations: { id: string; name: string; run: (db: Database.Database) => void; ownTransaction?: boolean }[] = [
   { id: '001', name: 'initial', run: migration001 },
@@ -21,6 +22,7 @@ const migrations: { id: string; name: string; run: (db: Database.Database) => vo
   { id: '008', name: 'notify_state', run: migration008 },
   { id: '009', name: 'thread_locked', run: migration009 },
   { id: '010', name: 'ephemeral_users', run: migration010, ownTransaction: migration010RequiresOwnTransaction },
+  { id: '011', name: 'theme_color_primary_default', run: migration011 },
 ];
 
 export function runMigrations(db: Database.Database): void {

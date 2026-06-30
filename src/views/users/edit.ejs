@@ -17,7 +17,7 @@
     <% if (pendingUsernameRequest) { %>
       <div class="notice-msg">
         Pending change to <strong><%= pendingUsernameRequest.requestedUsername %></strong>
-        (submitted <%= formatDate(pendingUsernameRequest.createdAt) %>) — awaiting admin approval.
+        (submitted <%- include('../partials/local-time', { value: pendingUsernameRequest.createdAt }) %>) — awaiting admin approval.
       </div>
     <% } else { %>
       <form method="POST" action="<%= url('/users/' + (profile.id) + '/username-request') %>">

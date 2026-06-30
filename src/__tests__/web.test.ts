@@ -12,7 +12,7 @@ import { csrfMiddleware } from '../middleware/csrf';
 import { createUser } from '../services/auth';
 import { createSession } from '../services/session';
 import { createThread, updateThread } from '../services/threads';
-import { formatDisplayDate } from '../utils/formatDate';
+import { formatDisplayDate, toIsoTimestamp } from '../utils/formatDate';
 import { editButtonLabel } from '../utils/editButtonLabel';
 import { canPostToThread } from '../utils/threadLock';
 import { withBasePath, getBasePath } from '../utils/basePath';
@@ -37,6 +37,7 @@ describe('Web routes (integration)', () => {
     app.set('view engine', 'ejs');
     app.set('views', path.join(process.cwd(), 'src/views'));
     app.locals.formatDate = formatDisplayDate;
+    app.locals.isoTimestamp = toIsoTimestamp;
     app.locals.editButtonLabel = editButtonLabel;
     app.locals.canPostToThread = canPostToThread;
     app.locals.url = withBasePath;
@@ -56,7 +57,7 @@ describe('Web routes (integration)', () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain('admin');
-    expect(res.text).toMatch(/Joined: \d{4}-\d{2}-\d{2}/);
+    expect(res.text).toMatch(/Joined: <time datetime="[^"]+" class="local-time" data-mode="date">/);
   });
 
   it('shows account status to admins on profile pages', async () => {

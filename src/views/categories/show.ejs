@@ -49,7 +49,7 @@
               </td>
               <td class="td-author"><%- include('../partials/author-link', { authorUsername: thread.authorUsername, authorUserId: thread.authorUserId, authorIsDeleted: thread.authorIsDeleted, authorTrust: thread.authorTrust }) %></td>
               <td class="td-replies"><%= thread.postCount %></td>
-              <td class="td-activity"><%= formatDate(thread.updatedAt) %></td>
+              <td class="td-activity"><%- include('../partials/local-time', { value: thread.updatedAt, mode: 'date' }) %></td>
             </tr>
           <% }); %>
         <% } %>

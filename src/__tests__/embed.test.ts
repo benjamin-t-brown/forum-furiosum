@@ -12,7 +12,7 @@ import { csrfMiddleware } from '../middleware/csrf';
 import { createUser } from '../services/auth';
 import { createThread, updateThread } from '../services/threads';
 import { createPost, resolveReplyApproval } from '../services/posts';
-import { formatDisplayDate } from '../utils/formatDate';
+import { formatDisplayDate, toIsoTimestamp } from '../utils/formatDate';
 import { editButtonLabel } from '../utils/editButtonLabel';
 import { canPostToThread } from '../utils/threadLock';
 import { wasContentEdited } from '../utils/wasContentEdited';
@@ -43,6 +43,7 @@ describe('Embed routes', () => {
     app.set('view engine', 'ejs');
     app.set('views', path.join(process.cwd(), 'src/views'));
     app.locals.formatDate = formatDisplayDate;
+    app.locals.isoTimestamp = toIsoTimestamp;
     app.locals.editButtonLabel = editButtonLabel;
     app.locals.canPostToThread = canPostToThread;
     app.locals.wasContentEdited = wasContentEdited;

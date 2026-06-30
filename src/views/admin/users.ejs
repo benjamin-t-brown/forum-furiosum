@@ -41,7 +41,7 @@
               <td><%= u.email %></td>
               <td><span class="badge badge-<%= u.role %>"><%= u.role %></span></td>
               <td><span class="badge badge-status"><%= u.trust %></span></td>
-              <td><%= formatDate(u.createdAt) %></td>
+              <td><%- include('../partials/local-time', { value: u.createdAt, mode: 'date' }) %></td>
             </tr>
           <% }); %>
         </tbody>

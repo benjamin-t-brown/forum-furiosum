@@ -44,7 +44,7 @@
             <td><a href="<%= url('/threads/' + (t.id) + '') %>"><%= t.title %></a></td>
             <td><%- include('../partials/author-link', { authorUsername: t.authorUsername, authorUserId: t.authorUserId, authorIsDeleted: t.authorIsDeleted, authorTrust: t.authorTrust }) %></td>
             <td><%= t.categoryName %></td>
-            <td><%= formatDate(t.createdAt) %></td>
+            <td><%- include('../partials/local-time', { value: t.createdAt }) %></td>
             <td><a href="<%= url('/admin/threads/' + (t.id) + '/edit') %>" class="btn btn-sm">Review</a></td>
           </tr>
         <% }); %>
@@ -68,7 +68,7 @@
           <tr>
             <td><a href="<%= url('/threads/' + (p.threadId) + '') %>"><%= p.threadTitle %></a></td>
             <td><%- include('../partials/author-link', { authorUsername: p.authorUsername, authorUserId: p.authorUserId, authorIsDeleted: p.authorIsDeleted, authorTrust: p.authorTrust }) %></td>
-            <td><%= formatDate(p.createdAt) %></td>
+            <td><%- include('../partials/local-time', { value: p.createdAt }) %></td>
             <td><a href="<%= url('/admin/posts/' + (p.id) + '/edit') %>" class="btn btn-sm">Review</a></td>
           </tr>
         <% }); %>
@@ -94,7 +94,7 @@
             <td><a href="<%= url('/admin/users/' + (r.userId) + '/profile') %>"><%= r.currentUsername %></a></td>
             <td><%= r.currentUsername %></td>
             <td><strong><%= r.requestedUsername %></strong></td>
-            <td><%= formatDate(r.createdAt) %></td>
+            <td><%- include('../partials/local-time', { value: r.createdAt }) %></td>
             <td style="display:flex;gap:0.35rem;flex-wrap:wrap">
               <a href="<%= url('/admin/users/' + (r.userId) + '/profile') %>" class="btn btn-sm btn-secondary">Edit</a>
               <form method="POST" action="<%= url('/admin/username-requests/' + (r.id) + '/approve') %>" style="display:inline">
@@ -139,7 +139,7 @@
               <% } %>
             </td>
             <td><%= entry.reason ? entry.reason : '(no reason given)' %></td>
-            <td><%= formatDate(entry.createdAt) %></td>
+            <td><%- include('../partials/local-time', { value: entry.createdAt }) %></td>
           </tr>
         <% }); %>
       </tbody>

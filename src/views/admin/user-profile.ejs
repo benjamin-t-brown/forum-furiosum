@@ -17,7 +17,7 @@
     <strong><%= profile.username %></strong> &mdash; <%= profile.email %><br>
     <small>
       Role: <%= profile.role %> | Trust: <%= profile.trust %>
-      | Created: <%= formatDate(profile.createdAt) %>
+      | Created: <%- include('../partials/local-time', { value: profile.createdAt, mode: 'date' }) %>
       <% if (profile.isDeleted) { %> | <strong style="color:var(--color-error)">Deleted</strong><% } %>
     </small>
   </div>
@@ -29,7 +29,7 @@
       <div class="notice-msg" style="margin-bottom:1rem">
         User has a pending request to change username to
         <strong><%= pendingUsernameRequest.requestedUsername %></strong>
-        (submitted <%= formatDate(pendingUsernameRequest.createdAt) %>).
+        (submitted <%- include('../partials/local-time', { value: pendingUsernameRequest.createdAt }) %>).
         Saving a new username below will reject that request.
       </div>
     <% } %>

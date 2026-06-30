@@ -14,7 +14,7 @@
 
   <div style="margin-bottom:1rem;padding:0.75rem;border:1px solid var(--color-border);background:var(--color-surface)">
     <strong><%= profile.username %></strong> &mdash; <%= profile.email %><br>
-    <small>Role: <%= profile.role %> | Trust: <%= profile.trust %> | Created: <%= formatDate(profile.createdAt) %></small>
+    <small>Role: <%= profile.role %> | Trust: <%= profile.trust %> | Created: <%- include('../partials/local-time', { value: profile.createdAt, mode: 'date' }) %></small>
   </div>
 
   <% if (isAdminUser) { %>

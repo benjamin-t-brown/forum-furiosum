@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { createUser, getUserByEmail } from './auth';
+import { createUser, getUserByEmail, getUserByUsername } from './auth';
 import logger from '../logger';
 
 export async function bootstrapAdmin(db: Database.Database): Promise<void> {
@@ -34,11 +34,23 @@ export async function bootstrapAdmin(db: Database.Database): Promise<void> {
   }
 
   const existing = getUserByEmail(db, email);
-  if (!existing) {
-    await createUser(db, username, email, password, 'admin');
-    logger.info({ email, username }, 'Admin account bootstrapped');
-  } else if (existing.role === 'admin' && (existing.trust === 'new' || existing.trust === 'trusted')) {
-    db.prepare("UPDATE users SET trust = 'verified' WHERE id = ?").run(existing.id);
-    logger.info({ email, username: existing.username }, 'Bootstrap admin trust upgraded to verified');
+  if (existing) {
+    if (existing.role === 'admin' && (existing.trust === 'new' || existing.trust === 'trusted')) {
+      db.prepare("UPDATE users SET trust = 'verified' WHERE id = ?").run(existing.id);
+      logger.info({ email, username: existing.username }, 'Bootstrap admin trust upgraded to verified');
+    }
+    return;
   }
+
+  const usernameTaken = getUserByUsername(db, username);
+  if (usernameTaken) {
+    logger.info(
+      { username, email: usernameTaken.email },
+      'Bootstrap skipped: admin username already exists with a different email'
+    );
+    return;
+  }
+
+  await createUser(db, username, email, password, 'admin');
+  logger.info({ email, username }, 'Admin account bootstrapped');
 }
