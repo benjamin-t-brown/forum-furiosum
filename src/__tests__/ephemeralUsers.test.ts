@@ -86,6 +86,27 @@ describe('ephemeral users', () => {
     expect(canEphemeralUserPostToThread('new', { isEphemeral: 0 })).toBe(true);
   });
 
+  it('rejects ephemeral identify after account upgrade', async () => {
+    const thread = await createEphemeralThread();
+    const clientId = uuidv4();
+    const identified = await identifyEphemeralClient(db, clientId, thread.id);
+    expect(identified.ok).toBe(true);
+    if (!identified.ok) {return;}
+
+    await upgradeEphemeralUser(
+      db,
+      identified.user.id,
+      'realuser',
+      'real@example.com',
+      'password12345'
+    );
+
+    const again = await identifyEphemeralClient(db, clientId, thread.id);
+    expect(again.ok).toBe(false);
+    if (again.ok) {return;}
+    expect(again.code).toBe('UPGRADED');
+  });
+
   it('upgrade preserves user id for posts', async () => {
     const thread = await createEphemeralThread();
     const clientId = uuidv4();

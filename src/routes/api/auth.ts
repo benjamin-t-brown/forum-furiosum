@@ -21,7 +21,7 @@ authRouter.post('/ephemeral/identify', ephemeralIdentifyRateLimiter, async (req,
   const db = getDb();
   const result = await identifyEphemeralClient(db, clientId, threadId, req.ip, req.headers['user-agent']);
   if (!result.ok) {
-    const status = result.code === 'NOT_FOUND' ? 404 : result.code === 'FORBIDDEN' || result.code === 'BANNED' ? 403 : 400;
+    const status = result.code === 'NOT_FOUND' ? 404 : result.code === 'FORBIDDEN' || result.code === 'BANNED' || result.code === 'UPGRADED' ? 403 : 400;
     return void fail(res, status, result.code, result.message);
   }
 

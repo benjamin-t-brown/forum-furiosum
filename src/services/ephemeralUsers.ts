@@ -63,10 +63,12 @@ export async function identifyEphemeralClient(
   let isNew = false;
 
   if (userId) {
-    const user = db.prepare('SELECT * FROM users WHERE id = ? AND isDeleted = 0 AND isEphemeral = 1').get(userId) as User | undefined;
+    const user = db.prepare('SELECT * FROM users WHERE id = ? AND isDeleted = 0').get(userId) as User | undefined;
     if (!user) {
       db.prepare('DELETE FROM ephemeral_clients WHERE clientId = ?').run(clientId);
       userId = null;
+    } else if (!isEphemeralUser(user)) {
+      return { ok: false, code: 'UPGRADED', message: 'This anonymous session was upgraded to a full account. Log in to continue posting.' };
     } else if (user.trust === 'banned') {
       return { ok: false, code: 'BANNED', message: 'Account is banned' };
     }
@@ -112,8 +114,6 @@ export async function upgradeEphemeralUser(
       updatedAt = datetime('now')
     WHERE id = ?
   `).run(username, normalizedEmail, passwordHash, resolvedTrust, ephemeralUserId);
-
-  db.prepare('DELETE FROM ephemeral_clients WHERE userId = ?').run(ephemeralUserId);
 
   return db.prepare('SELECT * FROM users WHERE id = ?').get(ephemeralUserId) as User;
 }
