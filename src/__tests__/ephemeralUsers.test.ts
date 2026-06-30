@@ -159,18 +159,12 @@ describe('ephemeral users', () => {
     expect(posts[0].authorUserId).not.toBe(loggedIn!.id);
   });
 
-  it('generates unique adjective and noun per day in batch', () => {
-    const adjectives = new Set<string>();
-    const nouns = new Set<string>();
-    for (let i = 0; i < 50; i++) {
+  it('generates usernames in adjective_noun_number format', () => {
+    for (let i = 0; i < 20; i++) {
       const username = generateEphemeralUsername(db);
-      expect(username).toMatch(/^[a-z0-9]+_[a-z0-9]+_\d{1,3}$/);
-      const parts = username.split('_');
-      adjectives.add(parts[0]);
-      nouns.add(parts[1]);
+      expect(username).toMatch(/^[a-z]+_[a-z]+_\d{1,3}$/);
+      expect(username.length).toBeLessThanOrEqual(24);
     }
-    expect(adjectives.size).toBe(50);
-    expect(nouns.size).toBe(50);
   });
 
   it('cleans up inactive ephemeral users', async () => {

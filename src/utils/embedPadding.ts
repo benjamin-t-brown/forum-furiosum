@@ -31,19 +31,19 @@ function parsePx(value: unknown): number | undefined {
   return clampPx(n);
 }
 
-import { withBasePath } from './basePath';
+import { buildForumAbsoluteUrl } from './basePath';
 
 export const DEFAULT_EMBED_PADDING_PX = 16;
 
 export function buildEmbedThreadUrl(origin: string, threadId: string, padding = DEFAULT_EMBED_PADDING_PX): string {
-  const base = `${origin.replace(/\/$/, '')}${withBasePath(`/embed/threads/${threadId}`)}`;
+  const base = buildForumAbsoluteUrl(`/embed/threads/${threadId}`, origin);
   const px = clampPx(padding);
   if (px === 0) {return base;}
   return `${base}?padding=${px}`;
 }
 
 export function buildEmbedSnippet(origin: string, embedUrl: string): string {
-  const scriptUrl = `${origin.replace(/\/$/, '')}${withBasePath('/js/embed-host.js')}`;
+  const scriptUrl = buildForumAbsoluteUrl('/js/embed-host.js', origin);
   return [
     `<iframe class="forum-furiosum-embed" src="${embedUrl}" width="100%" style="border:0" scrolling="no" title="Comments"></iframe>`,
     `<script src="${scriptUrl}" async></script>`,

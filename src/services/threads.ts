@@ -112,15 +112,17 @@ export function createThread(
     body: string;
     approvalStatus?: ApprovalStatus;
     replyApprovalTrust?: ReplyApprovalTrust | null;
+    embedEnabled?: 0 | 1;
   }
 ): Thread {
   const id = uuidv4();
   const approvalStatus = data.approvalStatus ?? 'new';
   const replyApprovalTrust = data.replyApprovalTrust ?? null;
+  const embedEnabled = data.embedEnabled ?? 0;
   db.prepare(`
-    INSERT INTO threads (id, categoryId, authorUserId, title, body, approvalStatus, replyApprovalTrust)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(id, data.categoryId, data.authorUserId, data.title, data.body, approvalStatus, replyApprovalTrust);
+    INSERT INTO threads (id, categoryId, authorUserId, title, body, approvalStatus, replyApprovalTrust, embedEnabled)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, data.categoryId, data.authorUserId, data.title, data.body, approvalStatus, replyApprovalTrust, embedEnabled);
   return db.prepare('SELECT * FROM threads WHERE id = ?').get(id) as Thread;
 }
 

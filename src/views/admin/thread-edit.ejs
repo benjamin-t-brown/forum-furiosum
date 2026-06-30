@@ -81,9 +81,9 @@
     <%- include('../partials/reply-approval-trust-select') %>
 
     <% if (thread.embedEnabled) { %>
-    <div class="form-group">
-      <label>Embed snippet</label>
-      <textarea readonly rows="4" style="width:100%;font-family:monospace;font-size:0.8rem" onclick="this.select()"><%= embedSnippet %></textarea>
+    <div class="form-group embed-snippet">
+      <label class="embed-snippet-label">Embed link and iframe code</label>
+      <%- include('../partials/embed-copy-fields') %>
       <p style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem">
         <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
       </p>

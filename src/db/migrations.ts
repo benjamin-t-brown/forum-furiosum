@@ -10,6 +10,7 @@ import { migration008 } from './migrations/008_notify_state';
 import { migration009 } from './migrations/009_thread_locked';
 import { migration010, migration010RequiresOwnTransaction } from './migrations/010_ephemeral_users';
 import { migration011 } from './migrations/011_theme_color_primary_default';
+import { migration012 } from './migrations/012_drop_ephemeral_name_usage';
 
 const migrations: { id: string; name: string; run: (db: Database.Database) => void; ownTransaction?: boolean }[] = [
   { id: '001', name: 'initial', run: migration001 },
@@ -23,6 +24,7 @@ const migrations: { id: string; name: string; run: (db: Database.Database) => vo
   { id: '009', name: 'thread_locked', run: migration009 },
   { id: '010', name: 'ephemeral_users', run: migration010, ownTransaction: migration010RequiresOwnTransaction },
   { id: '011', name: 'theme_color_primary_default', run: migration011 },
+  { id: '012', name: 'drop_ephemeral_name_usage', run: migration012 },
 ];
 
 export function runMigrations(db: Database.Database): void {

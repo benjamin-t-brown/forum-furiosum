@@ -24,6 +24,23 @@ export function withBasePath(path: string): string {
   return `${base}${normalized}`;
 }
 
+/**
+ * Absolute public URL for a forum-relative path (e.g. /js/embed-host.js).
+ * Prefer FORUM_BASE_URL when set — it includes the subpath and matches what browsers use.
+ */
+export function buildForumAbsoluteUrl(appRelativePath: string, reqOrigin?: string): string {
+  const path = appRelativePath.startsWith('/') ? appRelativePath : `/${appRelativePath}`;
+  const forumUrl = process.env.FORUM_BASE_URL?.trim().replace(/\/+$/, '');
+  if (forumUrl) {
+    return `${forumUrl}${path}`;
+  }
+  const origin = (reqOrigin ?? '').replace(/\/+$/, '');
+  if (!origin) {
+    return withBasePath(path);
+  }
+  return `${origin}${withBasePath(path)}`;
+}
+
 /** Remove BASE_PATH prefix from an incoming or stored path (for validation). */
 export function stripBasePath(path: string): string {
   const base = getBasePath();

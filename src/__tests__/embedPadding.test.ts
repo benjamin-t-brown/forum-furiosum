@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   parseEmbedPadding,
   embedPaddingStyle,
@@ -10,6 +10,9 @@ import {
 } from '../utils/embedPadding';
 
 describe('embedPadding', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   it('parses uniform padding from padding or pad', () => {
     expect(parseEmbedPadding({ padding: '12' })).toEqual({
       top: 12, right: 12, bottom: 12, left: 12,
@@ -70,5 +73,20 @@ describe('embedPadding', () => {
     expect(snippet).toContain('scrolling="no"');
     expect(snippet).not.toContain('height="480"');
     expect(snippet).toContain('https://forum.example.com/js/embed-host.js');
+  });
+
+  it('uses FORUM_BASE_URL for subpath deployments', () => {
+    vi.stubEnv('FORUM_BASE_URL', 'https://revirtualis.net/forum-furiosum');
+    vi.stubEnv('BASE_PATH', '/forum-furiosum');
+
+    expect(buildEmbedThreadUrl('https://revirtualis.net', 'thread-1'))
+      .toBe(`https://revirtualis.net/forum-furiosum/embed/threads/thread-1?padding=${DEFAULT_EMBED_PADDING_PX}`);
+
+    const snippet = buildEmbedSnippet(
+      'https://revirtualis.net',
+      `https://revirtualis.net/forum-furiosum/embed/threads/thread-1?padding=${DEFAULT_EMBED_PADDING_PX}`,
+    );
+    expect(snippet).toContain('https://revirtualis.net/forum-furiosum/js/embed-host.js');
+    expect(snippet).not.toContain('https://revirtualis.net/js/embed-host.js');
   });
 });

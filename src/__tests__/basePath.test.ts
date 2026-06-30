@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getBasePath, getCookiePath, stripBasePath, withBasePath } from '../utils/basePath';
+import { getBasePath, getCookiePath, stripBasePath, withBasePath, buildForumAbsoluteUrl } from '../utils/basePath';
 import { sanitizeRedirectPath, authCompleteUrl } from '../utils/safeRedirect';
 
 describe('basePath', () => {
@@ -27,6 +27,18 @@ describe('basePath', () => {
     vi.stubEnv('BASE_PATH', '/forum-furiosum');
     expect(stripBasePath('/forum-furiosum/threads/1')).toBe('/threads/1');
     expect(stripBasePath('/threads/1')).toBe('/threads/1');
+  });
+
+  it('buildForumAbsoluteUrl prefers FORUM_BASE_URL', () => {
+    vi.stubEnv('FORUM_BASE_URL', 'https://example.com/forum-furiosum');
+    expect(buildForumAbsoluteUrl('/js/embed-host.js', 'https://example.com'))
+      .toBe('https://example.com/forum-furiosum/js/embed-host.js');
+  });
+
+  it('buildForumAbsoluteUrl falls back to origin and BASE_PATH', () => {
+    vi.stubEnv('BASE_PATH', '/forum-furiosum');
+    expect(buildForumAbsoluteUrl('/js/embed-host.js', 'https://example.com'))
+      .toBe('https://example.com/forum-furiosum/js/embed-host.js');
   });
 });
 

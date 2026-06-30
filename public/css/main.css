@@ -271,6 +271,12 @@ a:hover { text-decoration: underline; }
   text-align: left;
 }
 
+.embed-snippet-label + .embed-snippet-label,
+.embed-snippet-url + .embed-snippet-label {
+  margin-top: 0.5rem;
+}
+
+.embed-snippet-url,
 .embed-snippet-code {
   width: 100%;
   font-family: monospace;

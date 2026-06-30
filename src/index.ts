@@ -52,8 +52,11 @@ async function main() {
     logger.info({ basePath }, 'Serving forum under BASE_PATH');
   }
 
-  // Static files
+  // Static files (also under BASE_PATH when nginx forwards the full subpath)
   const publicDir = path.join(process.cwd(), 'public');
+  if (basePath) {
+    app.use(basePath, express.static(publicDir));
+  }
   app.use(express.static(publicDir));
   app.get('/favicon.ico', (_req, res) => {
     res.sendFile(path.join(publicDir, 'favicon.png'));

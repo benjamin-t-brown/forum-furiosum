@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { getDb } from '../../db/db';
 import { listCategories } from '../../services/categories';
 import { listThreads, getThreadById, createThread, updateThread, deleteThread } from '../../services/threads';
@@ -15,6 +15,15 @@ import { canPostToThread } from '../../utils/threadLock';
 import { canEphemeralUserPostToThread, isEphemeralUser, touchEphemeralActivity } from '../../services/ephemeralUsers';
 
 export const threadsWebRouter = Router();
+
+function embedThreadSnippetLocals(req: Request, thread: { id: string; embedEnabled?: 0 | 1 }) {
+  if (!thread.embedEnabled) {
+    return { embedUrl: null, embedSnippet: null };
+  }
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const embedUrl = buildEmbedThreadUrl(origin, thread.id);
+  return { embedUrl, embedSnippet: buildEmbedSnippet(origin, embedUrl) };
+}
 
 function replyApprovalTrustFormLocals(replyApprovalTrust: ReplyApprovalTrust | null = null) {
   return {
@@ -85,7 +94,10 @@ threadsWebRouter.post('/new', requireRegisteredUser, (req, res) => {
     title,
     body,
     approvalStatus,
-    ...(canModerateThread ? { replyApprovalTrust: parseReplyApprovalTrust(req.body.replyApprovalTrust) } : {}),
+    ...(canModerateThread ? {
+      replyApprovalTrust: parseReplyApprovalTrust(req.body.replyApprovalTrust),
+      embedEnabled: req.body.embedEnabled === '1' ? 1 : 0,
+    } : {}),
   });
   if (approvalStatus === 'approved') {
     return redirectTo(res,`/threads/${thread.id}`);
@@ -151,6 +163,7 @@ threadsWebRouter.get('/:id/edit', requireRegisteredUser, (req, res) => {
     error: null,
     canModerateThread,
     ...replyApprovalTrustFormLocals(thread.replyApprovalTrust),
+    ...(canModerateThread ? embedThreadSnippetLocals(req, thread) : {}),
   });
 });
 
@@ -175,6 +188,7 @@ threadsWebRouter.post('/:id/edit', requireRegisteredUser, (req, res) => {
       error: 'Invalid input',
       canModerateThread,
       ...replyApprovalTrustFormLocals(parseReplyApprovalTrust(req.body.replyApprovalTrust)),
+      ...(canModerateThread ? embedThreadSnippetLocals(req, thread) : {}),
     });
   }
 
@@ -187,6 +201,7 @@ threadsWebRouter.post('/:id/edit', requireRegisteredUser, (req, res) => {
       isHidden: req.body.isHidden === '1' ? 1 : 0,
       isDeleted: req.body.isDeleted === '1' ? 1 : 0,
       isLocked: req.body.isLocked === '1' ? 1 : 0,
+      embedEnabled: req.body.embedEnabled === '1' ? 1 : 0,
     } : {}),
   });
   const threadId = req.params.id as string;

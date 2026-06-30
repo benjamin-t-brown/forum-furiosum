@@ -17,6 +17,13 @@ import { editButtonLabel } from '../utils/editButtonLabel';
 import { canPostToThread } from '../utils/threadLock';
 import { withBasePath, getBasePath } from '../utils/basePath';
 import * as dbModule from '../db/db';
+import { getThreadById } from '../services/threads';
+
+function extractCsrfToken(html: string): string {
+  const match = html.match(/name="_csrf"\s+value="([^"]+)"/);
+  if (!match) {throw new Error('CSRF token not found');}
+  return match[1];
+}
 
 describe('Web routes (integration)', () => {
   let db: Database.Database;
@@ -197,5 +204,77 @@ describe('Web routes (integration)', () => {
     expect(res.text).toContain('badge-locked');
     expect(res.text).toContain('This thread is locked');
     expect(res.text).not.toContain('Post a Reply');
+  });
+
+  it('lets moderators enable embedding from the thread edit page', async () => {
+    const mod = await createUser(db, 'embedmod', 'embedmod@example.com', 'password123', 'moderator');
+    const modSession = createSession(db, mod.id);
+    const modCookie = `ff_session=${modSession.sessionId}`;
+    const categoryId = '00000000-0000-0000-0000-000000000001';
+
+    const thread = createThread(db, {
+      categoryId,
+      authorUserId: adminId,
+      title: 'Embeddable discussion',
+      body: 'Thread body',
+    });
+    updateThread(db, thread.id, { approvalStatus: 'approved' });
+
+    const agent = request.agent(app);
+    const editPage = await agent.get(`/threads/${thread.id}/edit`).set('Cookie', modCookie);
+    expect(editPage.status).toBe(200);
+    expect(editPage.text).toContain('Allow embedding');
+
+    const csrf = extractCsrfToken(editPage.text);
+    const saveRes = await agent
+      .post(`/threads/${thread.id}/edit`)
+      .set('Cookie', modCookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        title: thread.title,
+        body: thread.body,
+        embedEnabled: '1',
+      });
+
+    expect(saveRes.status).toBe(302);
+    expect(getThreadById(db, thread.id, 'admin')!.embedEnabled).toBe(1);
+
+    const showRes = await request(app).get(`/threads/${thread.id}`);
+    expect(showRes.status).toBe(200);
+    expect(showRes.text).toContain('Embed this thread');
+  });
+
+  it('lets moderators create threads with embedding enabled', async () => {
+    const mod = await createUser(db, 'newembedmod', 'newembedmod@example.com', 'password123', 'moderator');
+    const modSession = createSession(db, mod.id);
+    const modCookie = `ff_session=${modSession.sessionId}`;
+    const categoryId = '00000000-0000-0000-0000-000000000001';
+
+    const agent = request.agent(app);
+    const newPage = await agent.get('/threads/new').set('Cookie', modCookie);
+    expect(newPage.status).toBe(200);
+    expect(newPage.text).toContain('Allow embedding');
+
+    const csrf = extractCsrfToken(newPage.text);
+    const createRes = await agent
+      .post('/threads/new')
+      .set('Cookie', modCookie)
+      .type('form')
+      .send({
+        _csrf: csrf,
+        categoryId,
+        title: 'New embed thread',
+        body: 'Opening post',
+        embedEnabled: '1',
+      });
+
+    expect(createRes.status).toBe(302);
+    const threadId = createRes.headers.location!.replace('/threads/', '');
+    expect(getThreadById(db, threadId, 'admin')!.embedEnabled).toBe(1);
+
+    const showRes = await request(app).get(`/threads/${threadId}`);
+    expect(showRes.status).toBe(200);
+    expect(showRes.text).toContain('Embed this thread');
   });
 });

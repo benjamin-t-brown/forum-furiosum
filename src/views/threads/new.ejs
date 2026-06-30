@@ -24,6 +24,12 @@
     </div>
     <% if (canModerateThread) { %>
       <%- include('../partials/reply-approval-trust-select') %>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" name="embedEnabled" value="1">
+          Allow embedding (comment thread for external pages)
+        </label>
+      </div>
     <% } %>
     <button type="submit" class="btn">Post Thread</button>
     <a href="<%= url('/') %>" class="btn btn-secondary">Cancel</a>

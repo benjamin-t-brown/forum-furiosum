@@ -15,11 +15,13 @@ docker tag revirtualis/forum-furiosum:latest 442979135069.dkr.ecr.us-east-1.amaz
 
 ---
 
-## Push to AWS ECR
-
-Log in to the registry, then push:
+## Build
 
 ```bash
+docker build -t revirtualis/forum-furiosum .
+docker tag revirtualis/forum-furiosum:latest 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest
+
+# Push to AWS ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 442979135069.dkr.ecr.us-east-1.amazonaws.com
 
 docker push 442979135069.dkr.ecr.us-east-1.amazonaws.com/revirtualis/forum-furiosum:latest

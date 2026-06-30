@@ -45,6 +45,17 @@ describe('Thread service', () => {
       });
       expect(thread.replyApprovalTrust).toBe('verified');
     });
+
+    it('creates a thread with embedEnabled when set', () => {
+      const thread = createThread(db, {
+        categoryId,
+        authorUserId: userId,
+        title: 'Embed thread',
+        body: 'Hello world',
+        embedEnabled: 1,
+      });
+      expect(thread.embedEnabled).toBe(1);
+    });
   });
 
   describe('listThreads', () => {

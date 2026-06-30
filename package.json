@@ -24,6 +24,7 @@
     "notify:prod": "node dist/notify.js",
     "notify:clear": "tsx scripts/clear-notify-state.ts",
     "cleanup:ephemeral": "tsx scripts/cleanup-ephemeral.ts",
+    "docker:push": "bash scripts/docker-push.sh",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "deps:check-scripts": "npm approve-scripts --allow-scripts-pending",

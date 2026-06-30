@@ -35,7 +35,22 @@
             Locked (only moderators can reply or edit comments)
           </label>
         </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="embedEnabled" value="1" <%= thread.embedEnabled ? 'checked' : '' %>>
+            Allow embedding (comment thread for external pages)
+          </label>
+        </div>
       </fieldset>
+      <% if (thread.embedEnabled && typeof embedSnippet !== 'undefined' && embedSnippet) { %>
+      <div class="form-group embed-snippet">
+        <label class="embed-snippet-label">Embed link and iframe code</label>
+        <%- include('../partials/embed-copy-fields') %>
+        <p style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem">
+          <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
+        </p>
+      </div>
+      <% } %>
     <% } %>
     <button type="submit" class="btn">Save Changes</button>
     <a href="<%= url('/threads/' + (thread.id) + '') %>" class="btn btn-secondary">Cancel</a>

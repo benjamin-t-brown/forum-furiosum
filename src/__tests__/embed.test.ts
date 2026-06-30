@@ -84,6 +84,8 @@ describe('Embed routes', () => {
     const res = await request(app).get(`/threads/${threadId}`);
     expect(res.status).toBe(200);
     expect(res.text).toContain('Embed this thread');
+    expect(res.text).toContain('Embed link');
+    expect(res.text).toContain(`id="embed-snippet-url"`);
     expect(res.text).toContain(`/embed/threads/${threadId}?padding=16`);
     expect(res.text).toContain('forum-furiosum-embed');
     expect(res.text).toContain('embed-host.js');

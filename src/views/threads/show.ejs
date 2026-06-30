@@ -107,11 +107,9 @@
     <div class="embed-snippet">
       <h2 class="embed-snippet-title">Embed this thread</h2>
       <p class="embed-snippet-desc">Paste this code on an external page to show the comment thread:</p>
-      <label class="embed-snippet-label" for="embed-snippet-code">Iframe embed code</label>
-      <textarea id="embed-snippet-code" class="embed-snippet-code" readonly rows="3" onclick="this.select()"><%= embedSnippet %></textarea>
+      <%- include('../partials/embed-copy-fields') %>
       <p class="embed-snippet-link">
-        Direct link: <a href="<%= embedUrl %>" target="_blank" rel="noopener"><%= embedUrl %></a>
-        &middot; <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
+        <a href="<%= url('/embed/threads/' + (thread.id) + '') %>" target="_blank" rel="noopener">Preview embed</a>
       </p>
     </div>
   <% } %>
